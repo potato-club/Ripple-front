@@ -197,8 +197,11 @@ const SignUp = () => {
           ></StyledField>
           <StyledBtn type="button" onClick={()=>{sendVerificationEmail(watch("email"))}}>인증</StyledBtn>
         </StyledFieldAndBtnWrapper>
-        {errors.email && <StyledErrMsg>{errors.email.message}</StyledErrMsg>}
-        {emailStatus.sent && <StyledSuccessAndNoticeMsg>{"이메일로 인증코드를 보냈습니다."}</StyledSuccessAndNoticeMsg>}
+        { 
+          errors.email ?
+          <StyledErrMsg style={{visibility: errors.email ? "visible" : "hidden"}}>{errors.email?.message}</StyledErrMsg>:
+          <StyledSuccessAndNoticeMsg style={{visibility: emailStatus.sent ? "visible" : "hidden"}}>이메일로 인증코드를 보냈습니다.</StyledSuccessAndNoticeMsg>
+        }
 
 
         <StyledFieldLabel>인증번호</StyledFieldLabel>
@@ -211,8 +214,11 @@ const SignUp = () => {
           {emailStatus.timerOn?<StyledTimer>5:00</StyledTimer>:null}
           <StyledBtn type="button" disabled={!emailStatus.sent} onClick={()=>{verifyCertificationCode(watch("certifyCode"))}}>확인</StyledBtn>
         </StyledFieldAndBtnWrapper>
-        {errors.certifyCode && <StyledErrMsg>{errors.certifyCode.message}</StyledErrMsg>}
-        {emailStatus.verified && <StyledSuccessAndNoticeMsg>{"인증되었습니다."}</StyledSuccessAndNoticeMsg>}
+        {
+          errors.certifyCode ?
+          <StyledErrMsg style={{visibility: errors.certifyCode ? "visible" : "hidden"}}>{errors.certifyCode?.message}</StyledErrMsg>:
+          <StyledSuccessAndNoticeMsg style={{visibility: emailStatus.verified ? "visible" : "hidden"}}>인증되었습니다.</StyledSuccessAndNoticeMsg>
+        }
 
         <StyledFieldLabel>아이디</StyledFieldLabel>
         <StyledFieldAndBtnWrapper>
@@ -227,8 +233,11 @@ const SignUp = () => {
           ></StyledField>
           <StyledBtn type="button" onClick={()=>{checkIdDuplicate(watch("id"))}}>중복 확인</StyledBtn>
         </StyledFieldAndBtnWrapper>
-        {errors.id && <StyledErrMsg>{errors.id.message}</StyledErrMsg>}
-        {isUsernameAvailable && <StyledSuccessAndNoticeMsg>{"이 아이디는 사용 가능합니다."}</StyledSuccessAndNoticeMsg>}
+        {
+          errors.id ?
+          <StyledErrMsg style={{visibility: errors.id ? "visible" : "hidden"}}>{errors.id?.message}</StyledErrMsg>:
+          <StyledSuccessAndNoticeMsg style={{visibility: isUsernameAvailable ? "visible" : "hidden"}}>이 아이디는 사용 가능합니다.</StyledSuccessAndNoticeMsg>
+        }
 
 
         <StyledFieldLabel>비밀번호</StyledFieldLabel>
@@ -242,7 +251,7 @@ const SignUp = () => {
             }
           })}
         ></StyledField>
-        {errors.pw && <StyledErrMsg>{errors.pw.message}</StyledErrMsg>}
+        <StyledErrMsg style={{visibility: errors.pw ? "visible" : "hidden"}}>{errors.pw?.message || 'dummy text'}</StyledErrMsg>
 
 
         <StyledFieldLabel>비밀번호 확인</StyledFieldLabel>
@@ -254,7 +263,7 @@ const SignUp = () => {
             }
           })}
           ></StyledField>
-        {errors.pwCheck && <StyledErrMsg>{errors.pwCheck.message}</StyledErrMsg>}
+        <StyledErrMsg style={{visibility: errors.pwCheck ? "visible" : "hidden"}}>{errors.pwCheck?.message || 'dummy text'} </StyledErrMsg>
       </StyledFieldWrapper>
 
 
