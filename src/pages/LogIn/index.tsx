@@ -63,6 +63,7 @@ const StyledShortcutWrapper = styled.div`
   padding: 20px;
 `;
 const StyledShortcut = styled(Link)`
+  width: 70px; // 일시적으로 공간 만들어둠.
   font-size: 12px;
   color: inherit;
   text-decoration: none;
@@ -128,7 +129,7 @@ const Login = () => {
           })}/>
       </StyledFieldWrapper>
 
-        {isLoginErr && <StyledErrMsg>아이디 혹은 비밀번호가 일치하지 않습니다.</StyledErrMsg>}
+        <StyledErrMsg style={{visibility: isLoginErr ? "visible" : "hidden"}}>"아이디 혹은 비밀번호가 일치하지 않습니다."</StyledErrMsg>
       <StyledLoginBtn type="submit">로그인</StyledLoginBtn>
 
       <StyledShortcutWrapper>
