@@ -3,47 +3,57 @@ import { useParams, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import settingsImg from "../../assets/icons/settings.svg";
 import Navbar from "../../components/Navbar";
+import { HideScrollbar } from "../../styles/HideScrollbar";
+import { FeedCard } from "./FeedCard";
 
 const StyledCnt = styled.div`
-  width: 375px;
   height: 100vh;
+  width: auto;
+  aspect-ratio: 9 / 19;
   margin: auto;
-  position: relative;
-  overflow: hidden;
+
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 768px) {
+    aspect-ratio: unset;
+  }
 `;
 const StyledHeader = styled.div`
+  flex-shrink: 0;
+  height: 85px;
   background-color: #222;
   color: white;
   display: flex;
-  height: 85px;
   justify-content: space-between;
   align-items: center;
   padding: 22px 27px;
 `;
 const StyledUsername = styled.div`
   font-size: 32px;
-  line-height: 39;
+  line-height: 39px;
 `;
 const StyledSettingBtn = styled.img.attrs({ src: settingsImg })`
   height: 30px;
   width: 30px;
+  cursor: pointer;
 `;
 const StyledContent = styled.div`
+  flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  flex-grow: 1;
+  overflow: hidden;
 `;
-const ProfileSection = styled.div`
+const StyledProfileSection = styled.div`
+  flex-shrink: 0;
   display: flex;
   height: 124px;
   padding: 12px 21px;
   gap: 15px;
   align-items: center;
+  justify-content: space-around;
 `;
-const ProfileImage = styled.div<{ img?: string }>`
+const StyledProfileImage = styled.div<{ img?: string }>`
   background-image: ${(props) =>
     props.img
       ? `url(${props.img})`
@@ -52,61 +62,63 @@ const ProfileImage = styled.div<{ img?: string }>`
   background-position: center;
   background-size: cover;
   height: 100px;
-  width: 100px;
+  min-width: 100px;
   outline: 3px solid black;
   border-radius: 1000px;
 `;
-const ProfileInfoItem = styled.div`
-  width: 63px;
+const StyledProfileInfoItem = styled.div`
+  flex-grow: 1;
   height: 41px;
   text-align: center;
   font-size: 16px;
   line-height: 19px;
+  white-space: nowrap;
 `;
-const ScrollArea = styled.div`
-  overflow: auto;
-  flex-grow: 1;
-  padding-bottom: 160px;
-
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE & Edge */
-
-  &::-webkit-scrollbar {
-    display: none; /* Chrome, Safari */
-  }
+const StyledScrollAreaOut = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  ${HideScrollbar}
 `;
-const ReplySection = styled.div`
+const StyledScrollAreaIn = styled.div`
+  height: max-content;
+`;
+const StyledReplySection = styled.div`
   padding: 12px 21px;
 `;
-const ReplyItem = styled.div``;
-const FeedSection = styled.div`
+const StyledReplyItem = styled.div`
+  white-space: nowrap;
+`;
+const StyledFeedSection = styled.div`
   padding: 12px 21px;
 `;
-const FeedWrapper = styled.div`
+const StyledFeedWrapper = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 10px;
 `;
-const FeedItem = styled.div`
-  aspect-ratio: 1 / 1;
-  background: #eee;
+const StyledSectionTitle = styled.h2`
+  white-space: nowrap;
 `;
-const SectionTitle = styled.h2``;
-const NavbarWrapper = styled.div`
-  min-height: 80px;
-  transform: translateY(-160px);
+const StyledNavbarWrapper = styled.div`
+  flex-shrink: 0;
+  height: 85px;
+  background: #f4f4f4;
 `;
 
 const Profile = () => {
   const navigator = useNavigate();
   const { username } = useParams<{ username: string }>();
   const [profileImgSrc, setProfileImgSrc] = useState<string>();
-  const [replies, setReplies] = useState<string[]>([
+  const [replies] = useState<string[]>([
     "와 진짜 재밌어요",
     "ㄴㄴ 그건 아님",
     "안녕하세요 팬이에요",
   ]);
-  const [feeds, setFeeds] = useState([1, 2, 3, 4, 5, 6, 7, 8]);
+  const [feeds] = useState([1, 2, 3, 4, 5, 6, 7, 8]);
+
+  const [postCount] = useState(5);
+  const [followerCount] = useState(12);
+  const [followingCount] = useState(32);
 
   function getUserInfo(username: string) {
     console.log(`${username}의 정보를 요청합니다.`);
@@ -119,20 +131,16 @@ const Profile = () => {
 
   useEffect(() => {
     if (username) {
-      // 사용자 정보 요청
       const { displayName, profileImgSrc } = getUserInfo(username);
-
-      // 프로필 이미지 반영
       setProfileImgSrc(profileImgSrc);
 
-      // 탭 제목 반영
       document.title = displayName
         ? `Ripple | ${displayName}의 프로필`
         : `Ripple | ${username}의 프로필`;
     } else {
       document.title = "Ripple | 알 수 없는 사용자";
     }
-  }, []);
+  }, [username]);
 
   return (
     <StyledCnt>
@@ -140,45 +148,51 @@ const Profile = () => {
         <StyledUsername>{username}</StyledUsername>
         <StyledSettingBtn onClick={() => navigator("/settings")} />
       </StyledHeader>
+
       <StyledContent>
-        <ProfileSection>
-          <ProfileImage img={profileImgSrc} />
-          <ProfileInfoItem>
+        <StyledProfileSection>
+          <StyledProfileImage img={profileImgSrc} />
+          <StyledProfileInfoItem>
             게시
             <br />
-            {5}
-          </ProfileInfoItem>
-          <ProfileInfoItem>
+            {postCount}
+          </StyledProfileInfoItem>
+          <StyledProfileInfoItem>
             팔로워
             <br />
-            {12}
-          </ProfileInfoItem>
-          <ProfileInfoItem>
+            {followerCount}
+          </StyledProfileInfoItem>
+          <StyledProfileInfoItem>
             팔로잉
             <br />
-            {32}
-          </ProfileInfoItem>
-        </ProfileSection>
-        <ScrollArea>
-          <ReplySection>
-            <SectionTitle>최근 활동</SectionTitle>
-            {replies.map((reply, i) => (
-              <ReplyItem key={i}>{reply}</ReplyItem>
-            ))}
-          </ReplySection>
-          <FeedSection>
-            <SectionTitle>피드</SectionTitle>
-            <FeedWrapper>
-              {feeds.map((feed, i) => (
-                <FeedItem key={i}>{feed}</FeedItem>
+            {followingCount}
+          </StyledProfileInfoItem>
+        </StyledProfileSection>
+
+        <StyledScrollAreaOut>
+          <StyledScrollAreaIn>
+            <StyledReplySection>
+              <StyledSectionTitle>최근 활동</StyledSectionTitle>
+              {replies.map((reply, i) => (
+                <StyledReplyItem key={i}>{reply}</StyledReplyItem>
               ))}
-            </FeedWrapper>
-          </FeedSection>
-        </ScrollArea>
+            </StyledReplySection>
+
+            <StyledFeedSection>
+              <StyledSectionTitle>피드</StyledSectionTitle>
+              <StyledFeedWrapper>
+                {feeds.map((feed, i) => (
+                  <FeedCard key={i} />
+                ))}
+              </StyledFeedWrapper>
+            </StyledFeedSection>
+          </StyledScrollAreaIn>
+        </StyledScrollAreaOut>
       </StyledContent>
-      <NavbarWrapper>
+
+      <StyledNavbarWrapper>
         <Navbar />
-      </NavbarWrapper>
+      </StyledNavbarWrapper>
     </StyledCnt>
   );
 };
