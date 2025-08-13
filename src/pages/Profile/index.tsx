@@ -7,8 +7,7 @@ import { HideScrollbar } from "../../styles/HideScrollbar";
 import { FeedCard } from "./FeedCard";
 
 const StyledCnt = styled.div`
-  height: 100vh;
-  width: auto;
+  height: 100%;
   aspect-ratio: 9 / 19;
   margin: auto;
 
@@ -102,6 +101,7 @@ const StyledSectionTitle = styled.h2`
 const StyledNavbarWrapper = styled.div`
   flex-shrink: 0;
   height: 85px;
+  position: relative;
   background: #f4f4f4;
 `;
 
