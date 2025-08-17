@@ -44,6 +44,7 @@ const StyledField = styled.input`
   border: none;
   background-color: #dddddd;
   padding: 10px 0;
+  padding-left: 8px;
   &:focus {
     outline: none;
   }

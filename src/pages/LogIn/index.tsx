@@ -34,6 +34,7 @@ const StyledField = styled.input`
   border: none;
   background-color: #dddddd;
   padding: 10px 0;
+  padding-left: 8px;
   margin-bottom: 20px;
   &:focus {
     outline: none;
@@ -132,7 +133,7 @@ const Login = () => {
           })}/>
       </StyledFieldWrapper>
 
-        <StyledErrMsg style={{visibility: isLoginErr ? "visible" : "hidden"}}>"아이디 혹은 비밀번호가 일치하지 않습니다."</StyledErrMsg>
+        <StyledErrMsg style={{visibility: isLoginErr ? "visible" : "hidden"}}>아이디 혹은 비밀번호가 일치하지 않습니다.</StyledErrMsg>
       <StyledLoginBtn type="submit">로그인</StyledLoginBtn>
 
       <StyledShortcutWrapper>
