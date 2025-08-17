@@ -3,7 +3,8 @@ import googleIcon from "../../assets/icons/web_neutral_rd_na@2x.png";
 import { useState } from "react";
 import type { FormValues } from "../../types/LoginFormInterface";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router";
+import { useNavigate } from "react-router";
+//import { Link } from "react-router";
 
 const StyledCnt = styled.form`
   width: 80%;
@@ -62,7 +63,7 @@ const StyledShortcutWrapper = styled.div`
   justify-content: space-around;
   padding: 20px;
 `;
-const StyledShortcut = styled(Link)`
+const StyledShortcut = styled.div`
   width: 70px; // 일시적으로 공간 만들어둠.
   font-size: 12px;
   color: inherit;
@@ -111,6 +112,8 @@ const Login = () => {
   };
 
   const [isLoginErr, setIsLoginErr] = useState<boolean>(false);
+
+  const navigate = useNavigate();
   return (
     <StyledCnt onSubmit={handleSubmit(onSubmit)}>
       <StyledTitle>로그인</StyledTitle>
@@ -133,11 +136,11 @@ const Login = () => {
       <StyledLoginBtn type="submit">로그인</StyledLoginBtn>
 
       <StyledShortcutWrapper>
-        <StyledShortcut to={"/"}>아이디 찾기</StyledShortcut>
+        <StyledShortcut onClick={()=>{navigate("/findIDPW", {state:{seletedTap: "id"}})}}>아이디 찾기</StyledShortcut>
         <StyledShortcutSeparator />
-        <StyledShortcut to={"/"}>비밀번호 찾기</StyledShortcut>
+        <StyledShortcut onClick={()=>{navigate("/findIDPW", {state:{seletedTap: "pw"}})}}>비밀번호 찾기</StyledShortcut>
         <StyledShortcutSeparator />
-        <StyledShortcut to={"/signup"}>회원가입</StyledShortcut>
+        <StyledShortcut onClick={()=>{navigate("/signup")}}>회원가입</StyledShortcut>
       </StyledShortcutWrapper>
 
       <StyledOr>OR</StyledOr>

@@ -3,8 +3,9 @@ import styled from "styled-components";
 import useIsMobile from "./hooks/useIsMobile";
 import Landing from "./pages/Landing";
 import Profile from "./pages/Profile";
-import LogIn from "./pages/Login";
+import LogIn from "./pages/LogIn";
 import SignUp from "./pages/SignUp";
+import FindIDPW from "./pages/FindIDPW";
 
 const StyledDesktopErrorCnt = styled.div`
   display: flex;
@@ -23,6 +24,7 @@ function App() {
         <Route path="/:username" element={<Profile />} />
         <Route path="/login" element={<LogIn/>} />
         <Route path="/signup" element={<SignUp/>} />
+        <Route path="/findIDPW" element={<FindIDPW/>} />
       </Routes>
     </BrowserRouter>:
     <StyledDesktopErrorCnt>
