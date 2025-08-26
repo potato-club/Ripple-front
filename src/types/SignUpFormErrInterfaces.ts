@@ -11,4 +11,4 @@ interface EmailStatus {
   timerOn: boolean;
 }
 
-export type {FormValues, EmailStatus};
+export type { FormValues, EmailStatus };
