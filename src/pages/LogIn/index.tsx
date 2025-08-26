@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { FormValues } from "../../types/LoginFormInterface";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
+import { useAuthStore } from "../../stores/useAuthStore";
 
 const StyledCnt = styled.form`
   width: 80%;
@@ -97,14 +98,18 @@ const StyledSigninWithGoogleAccount = styled.div`
 `;
 
 const Login = () => {
-  const {register, handleSubmit, formState: {errors}} = useForm<FormValues>({mode:"onChange"});
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>({ mode: "onChange" });
 
-  const onSubmit = (data:any) => {
-    /* 로그인 중... */
-    let loginSuccessed = false;
-    if (loginSuccessed) {
+  const logIn = useAuthStore((state) => state.logIn);
+
+  const onSubmit = async (data: FormValues) => {
+    const res = await logIn(data.id, data.pw);
+    if (res.ok) {
       setIsLoginErr(false);
-      console.log(data); 
     } else {
       setIsLoginErr(true);
     }
@@ -117,19 +122,27 @@ const Login = () => {
 
       <StyledFieldWrapper>
         <StyledFieldLabel>아이디</StyledFieldLabel>
-        <StyledField placeholder="아이디를 입력하세요"  type="text" 
+        <StyledField
+          placeholder="아이디를 입력하세요"
+          type="text"
           {...register("id", {
             required: "아이디 입력은 필수입니다.",
-          })}/>
+          })}
+        />
 
         <StyledFieldLabel>비밀번호</StyledFieldLabel>
-        <StyledField placeholder="비밀번호를 입력하세요"  type="text" 
+        <StyledField
+          placeholder="비밀번호를 입력하세요"
+          type="text"
           {...register("pw", {
             required: "비밀번호 입력은 필수입니다.",
-          })}/>
+          })}
+        />
       </StyledFieldWrapper>
 
-        <StyledErrMsg style={{visibility: isLoginErr ? "visible" : "hidden"}}>"아이디 혹은 비밀번호가 일치하지 않습니다."</StyledErrMsg>
+      <StyledErrMsg style={{ visibility: isLoginErr ? "visible" : "hidden" }}>
+        아이디 혹은 비밀번호가 일치하지 않습니다.
+      </StyledErrMsg>
       <StyledLoginBtn type="submit">로그인</StyledLoginBtn>
 
       <StyledShortcutWrapper>
@@ -146,7 +159,6 @@ const Login = () => {
         <img src={googleIcon} alt="" />
         <span>구글 계정으로 로그인</span>
       </StyledSigninWithGoogleAccount>
-
     </StyledCnt>
   );
 };

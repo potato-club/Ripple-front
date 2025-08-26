@@ -3,4 +3,4 @@ interface FormValues {
   pw: string;
 }
 
-export type {FormValues}
+export type { FormValues };
