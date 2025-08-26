@@ -5,11 +5,15 @@ import settingsImg from "../../assets/icons/settings.svg";
 import Navbar from "../../components/Navbar";
 import { HideScrollbar } from "../../styles/HideScrollbar";
 import { FeedCard } from "./FeedCard";
+import { ReplyItem } from "./ReplyItem";
 
 const StyledCnt = styled.div`
   height: 100%;
   aspect-ratio: 9 / 19;
   margin: auto;
+
+  background-color: var(--color-bg);
+  color: var(--color-text);
 
   display: flex;
   flex-direction: column;
@@ -20,21 +24,20 @@ const StyledCnt = styled.div`
 `;
 const StyledHeader = styled.div`
   flex-shrink: 0;
-  height: 85px;
-  background-color: #222;
+  height: 80px;
   color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 22px 27px;
+  padding: 24px;
 `;
 const StyledUsername = styled.div`
   font-size: 32px;
-  line-height: 39px;
+  line-height: 32px;
 `;
 const StyledSettingBtn = styled.img.attrs({ src: settingsImg })`
-  height: 30px;
-  width: 30px;
+  height: 32px;
+  width: 32px;
   cursor: pointer;
 `;
 const StyledContent = styled.div`
@@ -47,7 +50,7 @@ const StyledProfileSection = styled.div`
   flex-shrink: 0;
   display: flex;
   height: 124px;
-  padding: 12px 21px;
+  padding: 0 24px;
   gap: 15px;
   align-items: center;
   justify-content: space-around;
@@ -62,7 +65,6 @@ const StyledProfileImage = styled.div<{ img?: string }>`
   background-size: cover;
   height: 100px;
   min-width: 100px;
-  outline: 3px solid black;
   border-radius: 1000px;
 `;
 const StyledProfileInfoItem = styled.div`
@@ -82,37 +84,47 @@ const StyledScrollAreaIn = styled.div`
   height: max-content;
 `;
 const StyledReplySection = styled.div`
-  padding: 12px 21px;
+  padding: 16px 24px;
+  background-color: #333;
+  padding-bottom: 38px;
+  border-top: 0.5px solid var(--color-border);
+  border-bottom: 0.5px solid var(--color-border);
 `;
-const StyledReplyItem = styled.div`
-  white-space: nowrap;
-`;
+const StyledRepliesWrapper = styled.div``;
 const StyledFeedSection = styled.div`
   padding: 12px 21px;
 `;
 const StyledFeedWrapper = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 10px;
+  gap: 8px;
 `;
 const StyledSectionTitle = styled.h2`
   white-space: nowrap;
+  font-weight: 400;
+  font-size: 24px;
+  margin-bottom: 16px;
 `;
 const StyledNavbarWrapper = styled.div`
   flex-shrink: 0;
   height: 85px;
   position: relative;
-  background: #f4f4f4;
 `;
+
+interface Reply {
+  img: string;
+  username: string;
+  date: string;
+  content: string;
+}
 
 const Profile = () => {
   const navigator = useNavigate();
   const { username } = useParams<{ username: string }>();
   const [profileImgSrc, setProfileImgSrc] = useState<string>();
-  const [replies] = useState<string[]>([
-    "와 진짜 재밌어요",
-    "ㄴㄴ 그건 아님",
-    "안녕하세요 팬이에요",
+  const [replies] = useState<Reply[]>([
+    { username: "asdf", content: "Lorem Ipsum is simply dummy text of the printing and typ", date: "어제", img: "asdf" },
+    { username: "asdf", content: "안녕하세요!", date: "어제", img: "asdf" },
   ]);
   const [feeds] = useState([1, 2, 3, 4, 5, 6, 7, 8]);
 
@@ -173,13 +185,15 @@ const Profile = () => {
           <StyledScrollAreaIn>
             <StyledReplySection>
               <StyledSectionTitle>최근 활동</StyledSectionTitle>
-              {replies.map((reply, i) => (
-                <StyledReplyItem key={i}>{reply}</StyledReplyItem>
-              ))}
+              <StyledRepliesWrapper>
+                {replies.map((reply, i) => (
+                  <ReplyItem key={i} {...reply} />
+                ))}
+              </StyledRepliesWrapper>
             </StyledReplySection>
 
             <StyledFeedSection>
-              <StyledSectionTitle>피드</StyledSectionTitle>
+              <StyledSectionTitle>게시한 피드</StyledSectionTitle>
               <StyledFeedWrapper>
                 {feeds.map((feed, i) => (
                   <FeedCard key={i} />
