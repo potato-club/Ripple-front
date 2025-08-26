@@ -3,7 +3,7 @@ import styled from "styled-components";
 import useIsMobile from "./hooks/useIsMobile";
 import Landing from "./pages/Landing";
 import Profile from "./pages/Profile";
-import LogIn from "./pages/Login";
+import LogIn from "./pages/LogIn";
 import SignUp from "./pages/SignUp";
 
 const StyledDesktopErrorCnt = styled.div`
