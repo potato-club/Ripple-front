@@ -10,12 +10,10 @@ const StyledCnt = styled.form`
   text-align: center;
   font-size: 16px;
 `;
-
 const StyledTitle = styled.h1`
   font-size: 34px;
   margin-bottom: 10%;
 `;
-
 const StyledFieldWrapper = styled.div`
   margin-bottom: 60px;
 `;
@@ -35,6 +33,7 @@ const StyledField = styled.input`
   border: none;
   background-color: #dddddd;
   padding: 10px 0;
+  padding-left: 8px;
   &:focus {
     outline: none;
   }
@@ -44,7 +43,6 @@ const StyledField = styled.input`
     padding-left: 8px;
   }
 `;
-
 const StyledBtn = styled.button`
   margin: 0;
   border: none;
@@ -62,28 +60,24 @@ const StyledBtn = styled.button`
    color: #C0C0C0;
   }
 `;
-
 const StyledFieldAndBtnWrapper = styled.div`
   display: flex;
   width: 100%;
   margin: 0 auto;
   gap: 6px;
 `;
-
 const StyledErrMsg = styled.p`
   font-size: 12px;
   color: red;
   text-align: left;
   margin-bottom: 10px;
 `;
-
 const StyledSuccessAndNoticeMsg = styled.p`
   font-size: 12px;
   color: cornflowerblue;
   text-align: left;
   margin-bottom: 10px;
 `;
-
 const StyledSignUpBtn = styled.button`
   width: 100%;
   background-color: #ff0000;
@@ -91,7 +85,6 @@ const StyledSignUpBtn = styled.button`
   border: none;
   padding: 16px;
 `;
-
 const StyledTimer = styled.text`
   font-size: 12px;
   font-weight: bold;
@@ -100,8 +93,6 @@ const StyledTimer = styled.text`
   margin-bottom: 10px;
   padding: 12px 0;
 `;
-
-
 
 const SignUp = () => {
   const {register, handleSubmit, watch, setError, clearErrors, formState: {errors}} = useForm<FormValues>({mode:"onChange"});
