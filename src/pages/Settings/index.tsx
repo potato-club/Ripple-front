@@ -2,22 +2,32 @@ import styled from "styled-components";
 import Navbar from "../../components/Navbar";
 import { ToggleOption } from "./ToggleOption";
 
+import settingsIcon from "../../assets/icons/settings.svg";
+
 const StyledCnt = styled.div`
   display: flex;
   flex-direction: column;
   height: 100vh;
   width: 100%;
   aspect-ratio: 9 / 19;
+  background-color: #222;
+  color: #eee;
 `;
 const StyledHeader = styled.div`
-  background-color: #222;
-  height: 85px;
-  color: white;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: left;
-  padding: 0 27px;
+  padding: 0 32px;
+  gap: 16px;
+`;
+const StyledSettingsItem = styled.img.attrs({ src: settingsIcon, alt: "" })`
+  width: 32px;
+`;
+const StyledHeaderTitle = styled.h1`
   font-size: 32px;
+  font-weight: 400;
+  line-height: 32px;
 `;
 const StyledContent = styled.div`
   flex-grow: 1;
@@ -45,14 +55,10 @@ function Settings() {
   return (
     <StyledCnt>
       <StyledHeader>
-        <span>Settings</span>
+        <StyledSettingsItem />
+        <StyledHeaderTitle>설정</StyledHeaderTitle>
       </StyledHeader>
-      <StyledContent>
-        <StyledSection>
-          <StyledSectionTitle>설정 섹션</StyledSectionTitle>
-          <ToggleOption name="토글 옵션" checked={false} />
-        </StyledSection>
-      </StyledContent>
+      <StyledContent></StyledContent>
       <StyledNavbarWrp>
         <Navbar />
       </StyledNavbarWrp>
