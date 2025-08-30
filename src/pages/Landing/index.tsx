@@ -1,49 +1,84 @@
 import styled from "styled-components";
 import Navbar from "../../components/Navbar";
 
-import rippleIconImg from "../../assets/ripple-icon.png";
-import heartImg from "../../assets/icons/heart.svg";
-import dmImg from "../../assets/icons/dm.svg";
+import rippleIcon from "../../assets/ripple-icon.png";
+import heartIcon from "../../assets/icons/heart.svg";
+import dmIcon from "../../assets/icons/dm.svg";
+import { FeedItem } from "./FeedItem";
+import { useEffect, useState } from "react";
+import { useAuthStore } from "../../stores/useAuthStore";
 
 const StyledCnt = styled.div`
-  width: 512px;
+  display: flex;
+  flex-direction: column;
   height: 100vh;
-  margin: auto;
-  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 19;
+  background-color: #222;
+  color: #eee;
 `;
 const StyledHeader = styled.div`
-  background-color: #000;
   height: 80px;
-  color: white;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  justify-content: space-between;
+  padding: 0 8px;
 `;
-const StyledIcon = styled.img`
-  height: 56px;
-`;
-const StyledRightShortcutWrapper = styled.div`
+const StyledHeaderRightShortcutWrapper = styled.div`
   display: flex;
+  align-items: center;
+  justify-content: right;
   gap: 16px;
 `;
-const StyledRightShortcut = styled.img`
-  height: 36px;
+const StyledRippleIcon = styled.img.attrs({ src: rippleIcon, alt: "" })`
+  height: 64px;
+`;
+const StyledHeaderRightShortcutIcon = styled.img.attrs({ alt: "" })`
+  height: 32px;
+`;
+const StyledContent = styled.div`
+  flex-grow: 1;
+  overflow: scroll;
+  width: 100%;
+`;
+const StyledNavbarWrp = styled.div`
+  height: 80px;
 `;
 
-const Landing = () => {
+interface FeedItem {
+  id: string;
+}
+
+function Landing() {
+  const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  function getFeeds(): FeedItem[] {
+    // ~~피드 요청~~
+    return [{ id: "0" }, { id: "1" }, { id: "2" }];
+  }
+  useEffect(() => {
+    const feeds = getFeeds();
+    setFeedItems((prev) => [...prev, ...feeds]);
+  }, []);
   return (
     <StyledCnt>
       <StyledHeader>
-        <StyledIcon src={rippleIconImg} />
-        <StyledRightShortcutWrapper>
-          <StyledRightShortcut src={heartImg} />
-          <StyledRightShortcut src={dmImg} />
-        </StyledRightShortcutWrapper>
+        <StyledRippleIcon />
+        <StyledHeaderRightShortcutWrapper>
+          <StyledHeaderRightShortcutIcon src={heartIcon} />
+          <StyledHeaderRightShortcutIcon src={dmIcon} />
+        </StyledHeaderRightShortcutWrapper>
       </StyledHeader>
-      <Navbar />
+      <StyledContent>
+        {feedItems.map((e) => (
+          <FeedItem id={e.id} />
+        ))}
+      </StyledContent>
+      <StyledNavbarWrp>
+        <Navbar />
+      </StyledNavbarWrp>
     </StyledCnt>
   );
-};
+}
 
 export default Landing;
