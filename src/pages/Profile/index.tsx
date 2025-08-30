@@ -3,47 +3,59 @@ import { useParams, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import settingsImg from "../../assets/icons/settings.svg";
 import Navbar from "../../components/Navbar";
+import { HideScrollbar } from "../../styles/HideScrollbar";
+import { FeedCard } from "./FeedCard";
+import { ReplyItem } from "./ReplyItem";
 
 const StyledCnt = styled.div`
-  width: 375px;
-  height: 100vh;
+  height: 100%;
+  aspect-ratio: 9 / 19;
   margin: auto;
-  position: relative;
-  overflow: hidden;
+
+  background-color: var(--color-bg);
+  color: var(--color-text);
+
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 768px) {
+    aspect-ratio: unset;
+  }
 `;
 const StyledHeader = styled.div`
-  background-color: #222;
+  flex-shrink: 0;
+  height: 80px;
   color: white;
   display: flex;
-  height: 85px;
   justify-content: space-between;
   align-items: center;
-  padding: 22px 27px;
+  padding: 24px;
 `;
 const StyledUsername = styled.div`
   font-size: 32px;
-  line-height: 39;
+  line-height: 32px;
 `;
 const StyledSettingBtn = styled.img.attrs({ src: settingsImg })`
-  height: 30px;
-  width: 30px;
+  height: 32px;
+  width: 32px;
+  cursor: pointer;
 `;
 const StyledContent = styled.div`
+  flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  flex-grow: 1;
+  overflow: hidden;
 `;
-const ProfileSection = styled.div`
+const StyledProfileSection = styled.div`
+  flex-shrink: 0;
   display: flex;
   height: 124px;
-  padding: 12px 21px;
+  padding: 0 24px;
   gap: 15px;
   align-items: center;
+  justify-content: space-around;
 `;
-const ProfileImage = styled.div<{ img?: string }>`
+const StyledProfileImage = styled.div<{ img?: string }>`
   background-image: ${(props) =>
     props.img
       ? `url(${props.img})`
@@ -52,61 +64,73 @@ const ProfileImage = styled.div<{ img?: string }>`
   background-position: center;
   background-size: cover;
   height: 100px;
-  width: 100px;
-  outline: 3px solid black;
+  min-width: 100px;
   border-radius: 1000px;
 `;
-const ProfileInfoItem = styled.div`
-  width: 63px;
+const StyledProfileInfoItem = styled.div`
+  flex-grow: 1;
   height: 41px;
   text-align: center;
   font-size: 16px;
   line-height: 19px;
+  white-space: nowrap;
 `;
-const ScrollArea = styled.div`
-  overflow: auto;
-  flex-grow: 1;
-  padding-bottom: 160px;
-
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE & Edge */
-
-  &::-webkit-scrollbar {
-    display: none; /* Chrome, Safari */
-  }
+const StyledScrollAreaOut = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  ${HideScrollbar}
 `;
-const ReplySection = styled.div`
+const StyledScrollAreaIn = styled.div`
+  height: max-content;
+`;
+const StyledReplySection = styled.div`
+  padding: 16px 24px;
+  background-color: #333;
+  padding-bottom: 38px;
+  border-top: 0.5px solid var(--color-border);
+  border-bottom: 0.5px solid var(--color-border);
+`;
+const StyledRepliesWrapper = styled.div``;
+const StyledFeedSection = styled.div`
   padding: 12px 21px;
 `;
-const ReplyItem = styled.div``;
-const FeedSection = styled.div`
-  padding: 12px 21px;
-`;
-const FeedWrapper = styled.div`
+const StyledFeedWrapper = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 10px;
+  gap: 8px;
 `;
-const FeedItem = styled.div`
-  aspect-ratio: 1 / 1;
-  background: #eee;
+const StyledSectionTitle = styled.h2`
+  white-space: nowrap;
+  font-weight: 400;
+  font-size: 24px;
+  margin-bottom: 16px;
 `;
-const SectionTitle = styled.h2``;
-const NavbarWrapper = styled.div`
-  min-height: 80px;
-  transform: translateY(-160px);
+const StyledNavbarWrapper = styled.div`
+  flex-shrink: 0;
+  height: 85px;
+  position: relative;
 `;
+
+interface Reply {
+  img: string;
+  username: string;
+  date: string;
+  content: string;
+}
 
 const Profile = () => {
   const navigator = useNavigate();
   const { username } = useParams<{ username: string }>();
   const [profileImgSrc, setProfileImgSrc] = useState<string>();
-  const [replies, setReplies] = useState<string[]>([
-    "와 진짜 재밌어요",
-    "ㄴㄴ 그건 아님",
-    "안녕하세요 팬이에요",
+  const [replies] = useState<Reply[]>([
+    { username: "asdf", content: "Lorem Ipsum is simply dummy text of the printing and typ", date: "어제", img: "asdf" },
+    { username: "asdf", content: "안녕하세요!", date: "어제", img: "asdf" },
   ]);
-  const [feeds, setFeeds] = useState([1, 2, 3, 4, 5, 6, 7, 8]);
+  const [feeds] = useState([1, 2, 3, 4, 5, 6, 7, 8]);
+
+  const [postCount] = useState(5);
+  const [followerCount] = useState(12);
+  const [followingCount] = useState(32);
 
   function getUserInfo(username: string) {
     console.log(`${username}의 정보를 요청합니다.`);
@@ -119,20 +143,16 @@ const Profile = () => {
 
   useEffect(() => {
     if (username) {
-      // 사용자 정보 요청
       const { displayName, profileImgSrc } = getUserInfo(username);
-
-      // 프로필 이미지 반영
       setProfileImgSrc(profileImgSrc);
 
-      // 탭 제목 반영
       document.title = displayName
         ? `Ripple | ${displayName}의 프로필`
         : `Ripple | ${username}의 프로필`;
     } else {
       document.title = "Ripple | 알 수 없는 사용자";
     }
-  }, []);
+  }, [username]);
 
   return (
     <StyledCnt>
@@ -140,45 +160,53 @@ const Profile = () => {
         <StyledUsername>{username}</StyledUsername>
         <StyledSettingBtn onClick={() => navigator("/settings")} />
       </StyledHeader>
+
       <StyledContent>
-        <ProfileSection>
-          <ProfileImage img={profileImgSrc} />
-          <ProfileInfoItem>
+        <StyledProfileSection>
+          <StyledProfileImage img={profileImgSrc} />
+          <StyledProfileInfoItem>
             게시
             <br />
-            {5}
-          </ProfileInfoItem>
-          <ProfileInfoItem>
+            {postCount}
+          </StyledProfileInfoItem>
+          <StyledProfileInfoItem>
             팔로워
             <br />
-            {12}
-          </ProfileInfoItem>
-          <ProfileInfoItem>
+            {followerCount}
+          </StyledProfileInfoItem>
+          <StyledProfileInfoItem>
             팔로잉
             <br />
-            {32}
-          </ProfileInfoItem>
-        </ProfileSection>
-        <ScrollArea>
-          <ReplySection>
-            <SectionTitle>최근 활동</SectionTitle>
-            {replies.map((reply, i) => (
-              <ReplyItem key={i}>{reply}</ReplyItem>
-            ))}
-          </ReplySection>
-          <FeedSection>
-            <SectionTitle>피드</SectionTitle>
-            <FeedWrapper>
-              {feeds.map((feed, i) => (
-                <FeedItem key={i}>{feed}</FeedItem>
-              ))}
-            </FeedWrapper>
-          </FeedSection>
-        </ScrollArea>
+            {followingCount}
+          </StyledProfileInfoItem>
+        </StyledProfileSection>
+
+        <StyledScrollAreaOut>
+          <StyledScrollAreaIn>
+            <StyledReplySection>
+              <StyledSectionTitle>최근 활동</StyledSectionTitle>
+              <StyledRepliesWrapper>
+                {replies.map((reply, i) => (
+                  <ReplyItem key={i} {...reply} />
+                ))}
+              </StyledRepliesWrapper>
+            </StyledReplySection>
+
+            <StyledFeedSection>
+              <StyledSectionTitle>게시한 피드</StyledSectionTitle>
+              <StyledFeedWrapper>
+                {feeds.map((feed, i) => (
+                  <FeedCard key={i} />
+                ))}
+              </StyledFeedWrapper>
+            </StyledFeedSection>
+          </StyledScrollAreaIn>
+        </StyledScrollAreaOut>
       </StyledContent>
-      <NavbarWrapper>
+
+      <StyledNavbarWrapper>
         <Navbar />
-      </NavbarWrapper>
+      </StyledNavbarWrapper>
     </StyledCnt>
   );
 };

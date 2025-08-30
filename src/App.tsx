@@ -6,6 +6,7 @@ import Profile from "./pages/Profile";
 import LogIn from "./pages/LogIn";
 import SignUp from "./pages/SignUp";
 import Settings from "./pages/Settings";
+import FindIDPW from "./pages/FindIDPW";
 
 const StyledDesktopErrorCnt = styled.div`
   display: flex;
@@ -16,8 +17,7 @@ const StyledDesktopErrorCnt = styled.div`
 
 function App() {
   const isMobile = useIsMobile();
-  return (
-    isMobile ?
+  return isMobile ? (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Landing />} />
@@ -25,8 +25,10 @@ function App() {
         <Route path="/login" element={<LogIn/>} />
         <Route path="/signup" element={<SignUp/>} />
         <Route path="/settings" element={<Settings/>} />
+        <Route path="/findIDPW" element={<FindIDPW/>} />
       </Routes>
-    </BrowserRouter>:
+    </BrowserRouter>
+  ) : (
     <StyledDesktopErrorCnt>
       <h1>모바일 기기에서만 호환합니다.</h1>
     </StyledDesktopErrorCnt>

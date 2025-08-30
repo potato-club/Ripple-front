@@ -3,7 +3,8 @@ import googleIcon from "../../assets/icons/web_neutral_rd_na@2x.png";
 import { useState } from "react";
 import type { FormValues } from "../../types/LoginFormInterface";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router";
+import { useAuthStore } from "../../stores/useAuthStore";
+import { useNavigate } from "react-router";
 
 const StyledCnt = styled.form`
   width: 80%;
@@ -33,6 +34,7 @@ const StyledField = styled.input`
   border: none;
   background-color: #dddddd;
   padding: 10px 0;
+  padding-left: 8px;
   margin-bottom: 20px;
   &:focus {
     outline: none;
@@ -62,7 +64,7 @@ const StyledShortcutWrapper = styled.div`
   justify-content: space-around;
   padding: 20px;
 `;
-const StyledShortcut = styled(Link)`
+const StyledShortcut = styled.div`
   width: 70px; // 일시적으로 공간 만들어둠.
   font-size: 12px;
   color: inherit;
@@ -97,47 +99,58 @@ const StyledSigninWithGoogleAccount = styled.div`
 `;
 
 const Login = () => {
-  const {register, handleSubmit, formState: {errors}} = useForm<FormValues>({mode:"onChange"});
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>({ mode: "onChange" });
 
-  const onSubmit = (data:any) => {
-    /* 로그인 중... */
-    let loginSuccessed = false;
-    if (loginSuccessed) {
+  const logIn = useAuthStore((state) => state.logIn);
+
+  const onSubmit = async (data: FormValues) => {
+    const res = await logIn(data.id, data.pw);
+    if (res.ok) {
       setIsLoginErr(false);
-      console.log(data); 
     } else {
       setIsLoginErr(true);
     }
   };
 
   const [isLoginErr, setIsLoginErr] = useState<boolean>(false);
+
+  const navigate = useNavigate();
   return (
     <StyledCnt onSubmit={handleSubmit(onSubmit)}>
       <StyledTitle>로그인</StyledTitle>
 
       <StyledFieldWrapper>
         <StyledFieldLabel>아이디</StyledFieldLabel>
-        <StyledField placeholder="아이디를 입력하세요"  type="text" 
+        <StyledField
+          placeholder="아이디를 입력하세요"
+          type="text"
           {...register("id", {
             required: "아이디 입력은 필수입니다.",
-          })}/>
+          })}
+        />
 
         <StyledFieldLabel>비밀번호</StyledFieldLabel>
-        <StyledField placeholder="비밀번호를 입력하세요"  type="text" 
+        <StyledField
+          placeholder="비밀번호를 입력하세요"
+          type="text"
           {...register("pw", {
             required: "비밀번호 입력은 필수입니다.",
-          })}/>
+          })}
+        />
       </StyledFieldWrapper>
-
-        <StyledErrMsg style={{visibility: isLoginErr ? "visible" : "hidden"}}>"아이디 혹은 비밀번호가 일치하지 않습니다."</StyledErrMsg>
+        <StyledErrMsg style={{visibility: isLoginErr ? "visible" : "hidden"}}>아이디 혹은 비밀번호가 일치하지 않습니다.</StyledErrMsg>
       <StyledLoginBtn type="submit">로그인</StyledLoginBtn>
 
       <StyledShortcutWrapper>
-        <StyledShortcut to={"/"}>아이디 찾기</StyledShortcut>
+        <StyledShortcut onClick={()=>{navigate("/findIDPW", {state:{seletedTap: "id"}})}}>아이디 찾기</StyledShortcut>
         <StyledShortcutSeparator />
-        <StyledShortcut to={"/"}>비밀번호 찾기</StyledShortcut>
+        <StyledShortcut onClick={()=>{navigate("/findIDPW", {state:{seletedTap: "pw"}})}}>비밀번호 찾기</StyledShortcut>
         <StyledShortcutSeparator />
-        <StyledShortcut to={"/signup"}>회원가입</StyledShortcut>
+        <StyledShortcut onClick={()=>{navigate("/signup")}}>회원가입</StyledShortcut>
       </StyledShortcutWrapper>
 
       <StyledOr>OR</StyledOr>
@@ -146,7 +159,6 @@ const Login = () => {
         <img src={googleIcon} alt="" />
         <span>구글 계정으로 로그인</span>
       </StyledSigninWithGoogleAccount>
-
     </StyledCnt>
   );
 };
