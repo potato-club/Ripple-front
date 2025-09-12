@@ -3,7 +3,7 @@ import styled from "styled-components";
 import heartIcon from "../../assets/icons/heart.svg";
 import { CommentItem } from "./CommentItem";
 import { useEffect, useState } from "react";
-import { useAuthStore } from "../../stores/useAuthStore";
+// import { useAuthStore } from "../../stores/useAuthStore";
 
 const StyledCnt = styled.div`
   display: flex;
@@ -46,9 +46,29 @@ const StyledFeedContentContainer = styled.div`
   width: 100%;
   aspect-ratio: 1;
   background-color: #fff;
+  display: flex;
+  white-space: nowrap;
+  overflow: hidden;
+  overflow-x: scroll;
 `;
-const StyledFeedContentImage = styled.img``;
-const StyledFeedContentVideo = styled.video``;
+const StyledFeedContent = styled.div`
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  justify-content: center;
+  flex: 0 0 auto;
+`;
+const StyledFeedContentImage = styled.img`
+  /* 이미지 비율이 1:1이 아닐 경우 높이에 맞춤 */
+  /* width: 100%; */
+  height: 100%;
+`;
+const StyledFeedContentVideo = styled.video`
+  /* 비디오 비율이 1:1이 아닐 경우 높이에 맞춤 */
+  /* width: 100%; */
+  height: 100%;
+`;
 const StyledDetailContainer = styled.div`
   flex-grow: 1;
   width: 100%;
@@ -86,6 +106,7 @@ const StyledBestCommentsContainer = styled.div`
 interface FeedContent {
   type: "image" | "video";
   src: string;
+  index: number;
 }
 
 interface Comment {
@@ -96,18 +117,21 @@ interface Comment {
 }
 
 export const FeedItem = ({ id }: { id: string }) => {
-  const accessToken = useAuthStore((state) => state.accessToken);
+  // const accessToken = useAuthStore((state) => state.accessToken);
   const [feedContents, setFeedContents] = useState<FeedContent[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   function getFeedContents(): FeedContent[] {
     // ~~피드 콘텐츠 요청~~
+    id;
     return [
-      { type: "image", src: "" },
-      { type: "video", src: "" },
+      { type: "image", src: "", index: 0 },
+      { type: "image", src: "", index: 1 },
+      { type: "video", src: "", index: 2 },
     ];
   }
   function getComments(): Comment[] {
     // ~~댓글 요청~~
+    id;
     return [
       {
         username: "hayo",
@@ -138,8 +162,12 @@ export const FeedItem = ({ id }: { id: string }) => {
   }
 
   useEffect(() => {
-    const feedContents = getFeedContents();
-    setFeedContents((prev) => [...prev, ...feedContents]);
+    const newFeedContents = getFeedContents();
+    setFeedContents((prev) =>
+      Array.from(
+        new Map([...prev, ...newFeedContents].map((e) => [e.index, e])).values()
+      )
+    );
     const comments = getComments();
     setComments((prev) => [...prev, ...comments]);
   }, []);
@@ -152,13 +180,29 @@ export const FeedItem = ({ id }: { id: string }) => {
         <StyledHeaderFollowButton>팔로우</StyledHeaderFollowButton>
       </StyledHeader>
       <StyledFeedContentContainer>
-        {feedContents.map((e) =>
-          e.type === "image" ? (
-            <StyledFeedContentImage src={e.src} />
-          ) : (
-            <StyledFeedContentVideo src={e.src} />
-          )
-        )}
+        {feedContents.map((e) => (
+          <StyledFeedContent key={e.index}>
+            {e.type === "image" ? (
+              <StyledFeedContentImage
+                key={e.index}
+                src={
+                  e.src.length === 0
+                    ? "https://res.cloudinary.com/dakcrgcnt/image/upload/v1751382483/il7q5y3fwz2bykxnzdlx.png"
+                    : e.src
+                }
+              />
+            ) : (
+              <StyledFeedContentVideo
+                key={e.index}
+                src={
+                  e.src.length === 0
+                    ? "https://res.cloudinary.com/dakcrgcnt/image/upload/v1751382483/il7q5y3fwz2bykxnzdlx.png"
+                    : e.src
+                }
+              />
+            )}
+          </StyledFeedContent>
+        ))}
       </StyledFeedContentContainer>
       <StyledDetailContainer>
         <StyledDetailHeader>
@@ -170,8 +214,10 @@ export const FeedItem = ({ id }: { id: string }) => {
         </StyledDetailHeader>
         <StyledBestCommentsContainer>
           {comments.length <= 2
-            ? comments.map((e) => <CommentItem {...e} />)
-            : comments.splice(0, 2).map((e) => <CommentItem {...e} />)}
+            ? comments.map((e) => <CommentItem key={e.username} {...e} />)
+            : comments
+                .splice(0, 2)
+                .map((e) => <CommentItem key={e.username} {...e} />)}
         </StyledBestCommentsContainer>
       </StyledDetailContainer>
     </StyledCnt>

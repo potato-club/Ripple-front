@@ -48,7 +48,7 @@ export const CommentItem = ({
   return (
     <StyledCnt>
       <StyledLeftBox>
-        <StyledProfileImage src={profileUrl} />
+        <StyledProfileImage src={profileUrl.length === 0 ? "asdf" : profileUrl} />
       </StyledLeftBox>
       <StyledRightBox>
         <StyledRightBoxHeader>

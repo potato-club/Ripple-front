@@ -6,7 +6,7 @@ import heartIcon from "../../assets/icons/heart.svg";
 import dmIcon from "../../assets/icons/dm.svg";
 import { FeedItem } from "./FeedItem";
 import { useEffect, useState } from "react";
-import { useAuthStore } from "../../stores/useAuthStore";
+// import { useAuthStore } from "../../stores/useAuthStore";
 
 const StyledCnt = styled.div`
   display: flex;
@@ -51,7 +51,7 @@ interface FeedItem {
 
 function Landing() {
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
-  const accessToken = useAuthStore((state) => state.accessToken);
+  // const accessToken = useAuthStore((state) => state.accessToken);
   function getFeeds(): FeedItem[] {
     // ~~피드 요청~~
     return [{ id: "0" }, { id: "1" }, { id: "2" }];
@@ -71,7 +71,7 @@ function Landing() {
       </StyledHeader>
       <StyledContent>
         {feedItems.map((e) => (
-          <FeedItem id={e.id} />
+          <FeedItem key={e.id} id={e.id} />
         ))}
       </StyledContent>
       <StyledNavbarWrp>
