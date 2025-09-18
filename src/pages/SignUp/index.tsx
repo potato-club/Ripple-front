@@ -2,6 +2,9 @@ import { useState } from "react";
 import styled from "styled-components";
 import type {FormValues, EmailStatus} from "../../types/SignUpFormErrInterfaces";
 import { useForm } from "react-hook-form";
+import { checkDuplicateUser } from "../../services/SignUp/CheckDuplicateUser";
+import { validateVerifyCode } from "../../services/SignUp/validateVerifyCode";
+import { sendVerifyCode } from "../../services/SignUp/SignUp";
 
 const StyledCnt = styled.form`
   width: 80%;
@@ -97,10 +100,6 @@ const StyledTimer = styled.text`
 const SignUp = () => {
   const {register, handleSubmit, watch, setError, clearErrors, formState: {errors}} = useForm<FormValues>({mode:"onChange"});
 
-  const onSubmit = (data:any) => {
-    console.log(data); 
-  };
-
   const [emailStatus, setEmailStatus] = useState<EmailStatus>({
     sent: false,
     verified: false,
@@ -109,19 +108,30 @@ const SignUp = () => {
 
   const [isUsernameAvailable, setIsUsernameAvailable] = useState(false);
 
-  const sendVerificationEmail = (email: string) => {
+  const handleSendVerifyCode = async (email: string) => {
 
+    // 이름은 더미로 이메일만 체크
+    const isAvailableEmail = await checkDuplicateUser("dummy", email);
     /* api 요청중 ... */
 
-    let emailDuplicated = false
-    if(!emailDuplicated) {
-      setEmailStatus((prev) => ({ ...prev, 
-        sent: true, // 이메일 인증 코드 보냄
-        verified: false, // 다른 이메일로 인증할시 전에 한 인증 취소
-        timerOn: true // 인증 타이머 온
-      }));
-      
-      clearErrors("email");
+    if(isAvailableEmail) {
+      // 이메일 인증 코드 보내기
+      const res = await checkDuplicateUser("dummy", email);
+
+      if (res.status===202) { // 202: 인증 코드 전송 성공
+        setEmailStatus((prev) => ({ ...prev, 
+          sent: true, // 이메일 인증 코드 보냄
+          verified: false, // 다른 이메일로 인증할시 전에 한 인증 취소
+          timerOn: true // 인증 타이머 온
+        }));
+        clearErrors("email");
+      } else {
+        setError("email", {
+          type: "manual",
+          message: "인증 코드 전송에 실패했습니다. 잠시 후 다시 시도해주세요."
+        })
+      }
+
     } else {
       setEmailStatus((prev) => ({ ...prev, 
         sent: false,
@@ -135,30 +145,32 @@ const SignUp = () => {
     }
   }
 
-  const verifyCertificationCode = (CertifyCode: string) => {
+  const handleValidateVerifyCode = async (email: string, verifyCode: string) => {
 
     /* 인증 번호 확인 작업... */
-    const isCorrect = true;
-    if (isCorrect) {
+    const res = await validateVerifyCode(email, verifyCode);
+    
+    if (res && res.status === 204) { // 204: 인증 성공
       setEmailStatus((prev) => ({ ...prev, 
         sent: false,
         verified: true,
         timerOn: false
       }));
-
-      clearErrors("certifyCode");
+      clearErrors("verifyCode");
     } else {
-      setError("certifyCode", {
+      setError("verifyCode", {
         type: "manual",
         message: "인증 번호가 일치하지 않습니다.",
       });
     }
   }
 
-  const checkIdDuplicate = (id:string) => {
-    let isIdDuplicated = false;
+  const checkIdDuplicate = async (id:string) => {
 
-    if (isIdDuplicated) {
+    // 이름은 더미로 이메일만 체크
+    const isIdAvailable = await checkDuplicateUser(id, "example@example.com");
+
+    if (!isIdAvailable) {
       setError("id", {
         type: "manual",
         message: "이미 사용 중인 아이디입니다."
@@ -168,6 +180,25 @@ const SignUp = () => {
       setIsUsernameAvailable(true);
     }
   }
+
+  const onSubmit = async (data:FormValues) => { // 최종 제출
+    const res = await sendVerifyCode(data.id, data.email, data.pw);
+    if (res && res.status === 201) { // 201: 회원가입 성공
+      clearErrors("signup");
+    } else if (res && res.status === 400) { // 400: 회원가입 실패
+      setError("signup", {
+        type: "manual",
+        message: "회원가입에 실패했습니다. 입력한 정보를 다시 확인해주세요."
+      });
+      return;
+    }  else if (res && res.status === 403) { // 403: 이메일 미인증
+      setError("signup", {
+        type: "manual",
+        message: "회윈가입을 위해 이메일 인증이 필요합니다."
+      });
+      return;
+    }
+  };
 
   return (
     <StyledCnt onSubmit={handleSubmit(onSubmit)}>
@@ -186,7 +217,7 @@ const SignUp = () => {
             },
           })}
           ></StyledField>
-          <StyledBtn type="button" onClick={()=>{sendVerificationEmail(watch("email"))}}>인증</StyledBtn>
+          <StyledBtn type="button" onClick={()=>{handleSendVerifyCode(watch("email"))}}>인증</StyledBtn>
         </StyledFieldAndBtnWrapper>
         { 
           errors.email ?
@@ -198,16 +229,16 @@ const SignUp = () => {
         <StyledFieldLabel>인증번호</StyledFieldLabel>
         <StyledFieldAndBtnWrapper>
           <StyledField placeholder="인증번호를 입력하세요" type="text" 
-          {...register("certifyCode", {
+          {...register("verifyCode", {
             required: "이메일 인증은 필수 입니다.",
           })}
           disabled={!emailStatus.sent}></StyledField>
           {emailStatus.timerOn?<StyledTimer>5:00</StyledTimer>:null}
-          <StyledBtn type="button" disabled={!emailStatus.sent} onClick={()=>{verifyCertificationCode(watch("certifyCode"))}}>확인</StyledBtn>
+          <StyledBtn type="button" disabled={!emailStatus.sent} onClick={()=>{handleValidateVerifyCode(watch("email"), watch("verifyCode"))}}>확인</StyledBtn>
         </StyledFieldAndBtnWrapper>
         {
-          errors.certifyCode ?
-          <StyledErrMsg style={{visibility: errors.certifyCode ? "visible" : "hidden"}}>{errors.certifyCode?.message}</StyledErrMsg>:
+          errors.verifyCode ?
+          <StyledErrMsg style={{visibility: errors.verifyCode ? "visible" : "hidden"}}>{errors.verifyCode?.message}</StyledErrMsg>:
           <StyledSuccessAndNoticeMsg style={{visibility: emailStatus.verified ? "visible" : "hidden"}}>인증되었습니다.</StyledSuccessAndNoticeMsg>
         }
 
@@ -257,7 +288,7 @@ const SignUp = () => {
         <StyledErrMsg style={{visibility: errors.pwCheck ? "visible" : "hidden"}}>{errors.pwCheck?.message || 'dummy text'} </StyledErrMsg>
       </StyledFieldWrapper>
 
-
+      <StyledErrMsg style={{visibility: errors.signup ? "visible" : "hidden"}}>{errors.signup?.message || 'dummy text'} </StyledErrMsg>
       <StyledSignUpBtn type="submit">회원가입</StyledSignUpBtn>
     </StyledCnt>
   );
