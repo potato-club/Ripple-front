@@ -6,5 +6,7 @@ export const sendVerifyCode = async (email: string) => {
     return res
   } catch (error) {
     console.log("인증 코드 전송 중 발생 에러: ", error);
+  } finally {
+    
   }
 };

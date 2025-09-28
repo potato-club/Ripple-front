@@ -4,7 +4,8 @@ import type {FormValues, EmailStatus} from "../../types/SignUpFormErrInterfaces"
 import { useForm } from "react-hook-form";
 import { checkDuplicateUser } from "../../services/SignUp/CheckDuplicateUser";
 import { validateVerifyCode } from "../../services/SignUp/validateVerifyCode";
-import { sendVerifyCode } from "../../services/SignUp/SignUp";
+import { sendVerifyCode } from "../../services/SignUp/SendVerifyCode";
+import { SignUp as SignUpApi } from "../../services/SignUp/SignUp";
 
 const StyledCnt = styled.form`
   width: 80%;
@@ -121,13 +122,12 @@ const SignUp = () => {
 
     // 이름은 더미로 이메일만 체크
     const isAvailableEmail = await checkDuplicateUser("dummy", email);
-    /* api 요청중 ... */
 
     if(isAvailableEmail) {
       // 이메일 인증 코드 보내기
-      const res = await checkDuplicateUser("dummy", email);
+      const res = await sendVerifyCode(email);
 
-      if (res.status===202) { // 202: 인증 코드 전송 성공
+      if (res && res.status===202 ) { // 202: 인증 코드 전송 성공
         setEmailStatus((prev) => ({ ...prev, 
           sent: true, // 이메일 인증 코드 보냄
           verified: false, // 다른 이메일로 인증할시 전에 한 인증 취소
@@ -191,7 +191,7 @@ const SignUp = () => {
   }
 
   const onSubmit = async (data:FormValues) => { // 최종 제출
-    const res = await sendVerifyCode(data.id, data.email, data.pw);
+    const res = await SignUpApi(data.id, data.email, data.pw);
     if (res && res.status === 201) { // 201: 회원가입 성공
       clearErrors("signup");
     } else if (res && res.status === 400) { // 400: 회원가입 실패
