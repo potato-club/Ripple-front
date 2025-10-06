@@ -45,6 +45,7 @@ const StyledContent = styled.div`
 `;
 const StyledNavbarWrp = styled.div`
   height: 80px;
+  min-height: 80px;
 `;
 
 interface FeedItem {
@@ -130,7 +131,7 @@ function Landing() {
           <FeedItem key={e.id} id={e.id} />
         ))}
       </StyledContent>
-      <StyledNavbarWrp>
+      <StyledNavbarWrp className="asdf">
         <Navbar />
       </StyledNavbarWrp>
     </StyledCnt>

@@ -4,12 +4,12 @@ const StyledCnt = styled.div`
   display: flex;
   gap: 16px;
   max-width: 100%;
+  height: 64px;
 `;
 const StyledLeftBox = styled.div``;
 const StyledProfileImage = styled.img.attrs({ alt: "" })`
   width: 48px;
   aspect-ratio: 1;
-  background-color: #fff;
   border-radius: 50%;
 `;
 const StyledRightBox = styled.div``;
@@ -48,7 +48,7 @@ export const CommentItem = ({
   return (
     <StyledCnt>
       <StyledLeftBox>
-        <StyledProfileImage src={profileUrl.length === 0 ? "asdf" : profileUrl} />
+        <StyledProfileImage src={profileUrl.length === 0 ? "https://placehold.co/400x400" : profileUrl} />
       </StyledLeftBox>
       <StyledRightBox>
         <StyledRightBoxHeader>

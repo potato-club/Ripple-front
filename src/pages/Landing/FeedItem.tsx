@@ -3,7 +3,7 @@ import styled from "styled-components";
 import heartIcon from "../../assets/icons/heart.svg";
 import { CommentItem } from "./CommentItem";
 import { useEffect, useState } from "react";
-// import { useAuthStore } from "../../stores/useAuthStore";
+// import { useAuthStore } from "../../stores/useAuthStore";  
 
 const StyledCnt = styled.div`
   display: flex;
@@ -101,6 +101,12 @@ const StyledShareButton = styled.button`
 const StyledBestCommentsContainer = styled.div`
   padding: 0 16px;
   width: 100%;
+  /* &>*{
+    margin-bottom: 4px;
+  }
+  &>*:last-child{
+    margin-bottom: 0;
+  } */
 `;
 
 interface FeedContent {
