@@ -97,86 +97,8 @@ const 임시검색결과1 = [
     profileImage:
       "https://res.cloudinary.com/dakcrgcnt/image/upload/v1754237963/testprofileimage.png",
   },
-  {
-    userId: 1,
-    username: "하영",
-    profileImage:
-      "https://res.cloudinary.com/dakcrgcnt/image/upload/v1754237963/testprofileimage.png",
-  },
-  {
-    userId: 1,
-    username: "하영",
-    profileImage:
-      "https://res.cloudinary.com/dakcrgcnt/image/upload/v1754237963/testprofileimage.png",
-  },
-  {
-    userId: 1,
-    username: "하영",
-    profileImage:
-      "https://res.cloudinary.com/dakcrgcnt/image/upload/v1754237963/testprofileimage.png",
-  },
-  {
-    userId: 1,
-    username: "하영",
-    profileImage:
-      "https://res.cloudinary.com/dakcrgcnt/image/upload/v1754237963/testprofileimage.png",
-  },
-  {
-    userId: 1,
-    username: "하영",
-    profileImage:
-      "https://res.cloudinary.com/dakcrgcnt/image/upload/v1754237963/testprofileimage.png",
-  },
-  {
-    userId: 1,
-    username: "하영",
-    profileImage:
-      "https://res.cloudinary.com/dakcrgcnt/image/upload/v1754237963/testprofileimage.png",
-  },
-  {
-    userId: 1,
-    username: "하영",
-    profileImage:
-      "https://res.cloudinary.com/dakcrgcnt/image/upload/v1754237963/testprofileimage.png",
-  },
-  {
-    userId: 1,
-    username: "하영",
-    profileImage:
-      "https://res.cloudinary.com/dakcrgcnt/image/upload/v1754237963/testprofileimage.png",
-  },
-  {
-    userId: 1,
-    username: "하영",
-    profileImage:
-      "https://res.cloudinary.com/dakcrgcnt/image/upload/v1754237963/testprofileimage.png",
-  },
-  {
-    userId: 1,
-    username: "하영",
-    profileImage:
-      "https://res.cloudinary.com/dakcrgcnt/image/upload/v1754237963/testprofileimage.png",
-  },
-  {
-    userId: 1,
-    username: "하영",
-    profileImage:
-      "https://res.cloudinary.com/dakcrgcnt/image/upload/v1754237963/testprofileimage.png",
-  },
 ];
 const 임시검색결과2 = [
-  {
-    userId: 1,
-    username: "하영2",
-    profileImage:
-      "https://res.cloudinary.com/dakcrgcnt/image/upload/v1754237963/testprofileimage.png",
-  },
-  {
-    userId: 1,
-    username: "하영2",
-    profileImage:
-      "https://res.cloudinary.com/dakcrgcnt/image/upload/v1754237963/testprofileimage.png",
-  },
   {
     userId: 1,
     username: "하영2",
