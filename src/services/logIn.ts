@@ -21,6 +21,7 @@ export function logIn(username: string, password: string, deviceId: string) {
       username: username.trim(),
       password: password.trim(),
       deviceId: deviceId.trim(),
-    }
+    },
+    {withCredentials: true}
   );
 }
