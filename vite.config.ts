@@ -14,9 +14,9 @@ export default ({ mode }: ConfigEnv) => {
         '/v1': {
           target: env.VITE_API_URL, // 실제 API 주소
           changeOrigin: true,
-          secure: true, // SSL 인증서 검사 비활성화
+          secure: false, // SSL 인증서 검사 비활성화
           rewrite: (path) => path.replace(/^\/v1/, ''), // /v1 제거 후 전달
-        },
+        }
       },
     },
   })

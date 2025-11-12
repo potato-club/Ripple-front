@@ -89,7 +89,7 @@ const StyledSignUpBtn = styled.button`
   border: none;
   padding: 16px;
 `;
-const StyledTimer = styled.text`
+const StyledTimer = styled.span`
   font-size: 12px;
   font-weight: bold;
   color: cornflowerblue;
@@ -112,8 +112,9 @@ const SignUp = () => {
   const handleSendVerifyCode = async (email: string) => {
 
     // 이름은 더미로 이메일만 체크
-    const isAvailableEmail = await checkDuplicateUser("dummy", email);
-
+    // const isAvailableEmail = await checkDuplicateUser("dummy", email);
+    const isAvailableEmail = true;
+    
     if(isAvailableEmail) {
       // 이메일 인증 코드 보내기
       const res = await sendVerifyCode(email);

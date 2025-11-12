@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "../axiosClient";
 
 export const validateVerifyCode = async (email: string, code: string) => {
   try {

@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "../axiosClient";
 
 export const followUser = async (targetId: string) => {
   try {

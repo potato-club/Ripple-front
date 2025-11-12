@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "./axiosClient";
 
 export interface LogInResponse {
   accessToken: string;
@@ -16,7 +16,7 @@ export function logIn(username: string, password: string, deviceId: string) {
   if (deviceId.trim().length < 1) throw new Error("Device ID is not valid");
 
   return axios.post<LogInResponse>(
-    `https://${import.meta.env.VITE_API_URL}/api/auth/login`,
+    `/v1/api/auth/login`,
     {
       username: username.trim(),
       password: password.trim(),
