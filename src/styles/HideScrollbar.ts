@@ -1,0 +1,2 @@
+export const HideScrollbar =
+  "scrollbar-width:none;-ms-overflow-style:none;&::-webkit-scrollbar{display: none;}";
