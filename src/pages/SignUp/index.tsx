@@ -112,8 +112,7 @@ const SignUp = () => {
   const handleSendVerifyCode = async (email: string) => {
 
     // 이름은 더미로 이메일만 체크
-    // const isAvailableEmail = await checkDuplicateUser("dummy", email);
-    const isAvailableEmail = true;
+    const isAvailableEmail = await checkDuplicateUser("dummy", email);
     
     if(isAvailableEmail) {
       // 이메일 인증 코드 보내기

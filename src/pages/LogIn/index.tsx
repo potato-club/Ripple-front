@@ -136,7 +136,7 @@ const Login = () => {
         <StyledFieldLabel>비밀번호</StyledFieldLabel>
         <StyledField
           placeholder="비밀번호를 입력하세요"
-          type="text"
+          type="password"
           {...register("pw", {
             required: "비밀번호 입력은 필수입니다.",
           })}
