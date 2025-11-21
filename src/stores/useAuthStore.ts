@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { logIn } from "../services/logIn";
+import { LogIn } from "../services/Auth/logIn";
 import { getOrCreateDeviceId } from "../utils/getOrCreateDeviceId";
 
 interface AuthState {
@@ -17,7 +17,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   accessToken: null,
   logIn: async (username, password) => {
     try {
-      const res = await logIn(username, password, get().deviceId);
+      const res = await LogIn(username, password, get().deviceId);
       if (!res || !res.data.accessToken)
         return { ok: false, errorMessage: "다시 시도해보세요" };
       else if (res.status === 400 || res.status === 401)

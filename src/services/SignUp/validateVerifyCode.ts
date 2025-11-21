@@ -1,6 +1,6 @@
 import { axiosInstance } from "../axiosClient";
 
-export const validateVerifyCode = async (email: string, code: string) => {
+export const ValidateVerifyCode = async (email: string, code: string) => {
   try {
     const res = await axiosInstance.post(`/api/users/email/verification/verify`, { email, code });
     return res;

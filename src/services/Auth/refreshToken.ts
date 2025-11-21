@@ -1,4 +1,4 @@
-import {axiosInstance} from "./axiosClient";
+import {axiosInstance} from "../axiosClient";
 
 export const refreshToken = async (deviceId: string) => {
   try {

@@ -1,0 +1,10 @@
+import { axiosInstance } from "../axiosClient";
+import { useAuthStore } from "../../stores/useAuthStore";
+
+export const LogOut = () => {
+  const deviceId = useAuthStore.getState().deviceId;
+  return axiosInstance.post(
+    `/api/auth/logout`,
+    deviceId
+  );
+};

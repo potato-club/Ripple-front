@@ -3,7 +3,7 @@ import styled from "styled-components";
 import type {FormValues, EmailStatus} from "../../types/SignUpFormErrInterfaces";
 import { useForm } from "react-hook-form";
 import { checkDuplicateUser } from "../../services/SignUp/CheckDuplicateUser";
-import { validateVerifyCode } from "../../services/SignUp/validateVerifyCode";
+import { ValidateVerifyCode } from "../../services/SignUp/ValidateVerifyCode";
 import { sendVerifyCode } from "../../services/SignUp/SendVerifyCode";
 import { SignUp as SignUpApi } from "../../services/SignUp/SignUp";
 
@@ -114,7 +114,7 @@ const SignUp = () => {
     // 이름은 더미로 이메일만 체크
     const isAvailableEmail = await checkDuplicateUser("dummy", email);
     
-    if(isAvailableEmail) {
+    if(isAvailableEmail.email) {
       // 이메일 인증 코드 보내기
       const res = await sendVerifyCode(email);
 
@@ -148,7 +148,7 @@ const SignUp = () => {
   const handleValidateVerifyCode = async (email: string, verifyCode: string) => {
 
     /* 인증 번호 확인 작업... */
-    const res = await validateVerifyCode(email, verifyCode);
+    const res = await ValidateVerifyCode(email, verifyCode);
     
     if (res && res.status === 204) { // 204: 인증 성공
       setEmailStatus((prev) => ({ ...prev, 

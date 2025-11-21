@@ -1,10 +1,10 @@
-import { axiosInstance } from "./axiosClient";
+import { axiosInstance } from "../axiosClient";
 
 export interface LogInResponse {
   accessToken: string;
 }
 
-export function logIn(username: string, password: string, deviceId: string) {
+export function LogIn(username: string, password: string, deviceId: string) {
   return axiosInstance.post<LogInResponse>(
     `/api/auth/login`,
     {
