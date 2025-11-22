@@ -1,3 +1,4 @@
+import { isAxiosError } from "axios";
 import {axiosInstance} from "../../axiosClient";
 
 export const UnBlockUser = async (targetId: string) => {
@@ -5,6 +6,8 @@ export const UnBlockUser = async (targetId: string) => {
     const res = await axiosInstance.delete(`/api/users/${targetId}/block`);
     return res;
   } catch (error) {
-    console.log("차단 해제 중 발생 에러: ", error);
+    if(isAxiosError(error)) {
+      console.log(error.response?.data);
+    }
   }
 };

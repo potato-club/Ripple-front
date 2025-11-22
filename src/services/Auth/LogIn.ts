@@ -1,11 +1,13 @@
+import { isAxiosError } from "axios";
 import { axiosInstance } from "../axiosClient";
 
 export interface LogInResponse {
   accessToken: string;
 }
 
-export function LogIn(username: string, password: string, deviceId: string) {
-  return axiosInstance.post<LogInResponse>(
+export const LogIn = async (username: string, password: string, deviceId: string) => {
+  try {
+    const res = await axiosInstance.post<LogInResponse>(
     `/api/auth/login`,
     {
       username: username.trim(),
@@ -13,4 +15,10 @@ export function LogIn(username: string, password: string, deviceId: string) {
       deviceId: deviceId.trim(),
     },
   );
+    return res;
+  } catch (error) {
+    if(isAxiosError(error)) {
+      console.log(error.response?.data);
+    }
+  }
 }

@@ -1,4 +1,6 @@
+import { isAxiosError } from "axios";
 import {axiosInstance} from "../axiosClient";
+import type { ApiErrorResponse } from "../../types/apiErrorResponse";
 
 export const refreshToken = async (deviceId: string) => {
   try {
@@ -11,6 +13,9 @@ export const refreshToken = async (deviceId: string) => {
     );
     return res.data;
   } catch (error) {
-    console.log("엑세스 토큰 발급 중 에러: ", error);
+    if(isAxiosError<ApiErrorResponse>(error)) {
+      console.log(error.response?.data);
+      return error.response;
+    }
   }
 };

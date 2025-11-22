@@ -1,3 +1,4 @@
+import { isAxiosError } from "axios";
 import {axiosInstance} from "../axiosClient";
 
 export interface getMyProfileResponse {
@@ -17,12 +18,10 @@ export interface getMyProfileResponse {
 export const GetMyProfile = async () => {
   try {
     const res = await axiosInstance.get<getMyProfileResponse>(`/api/users/me`);
-    if (!res.data)
-      return res.data;
-    else {
-      throw new Error("반환 객체가 존재하지 않음.");
-    }
+    return res.data;
   } catch (error) {
-    console.log("내 정보 조회 중 발생 에러: ", error);
+    if(isAxiosError(error)) {
+      console.log(error.response?.data);
+    }
   }
 };

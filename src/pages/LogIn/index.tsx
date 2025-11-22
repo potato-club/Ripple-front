@@ -110,9 +110,9 @@ const Login = () => {
   const onSubmit = async (data: FormValues) => {
     const res = await logIn(data.id, data.pw);
     if (res.ok) {
-      navigate("/");
       setIsLoginErr(false);
-      console.log(errors);
+      navigate("/");
+      console.log(errors); // 이거 쓰긴 써야함
     } else {
       setIsLoginErr(true);
     }

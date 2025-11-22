@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import type {FormValues, EmailStatus} from "../../types/SignUpFormErrInterfaces";
 import { useForm } from "react-hook-form";
@@ -101,23 +101,44 @@ const StyledTimer = styled.span`
 const SignUp = () => {
   const {register, handleSubmit, watch, setError, clearErrors, formState: {errors}} = useForm<FormValues>({mode:"onChange"});
 
+  // 회원 가입 관련 변수들
   const [emailStatus, setEmailStatus] = useState<EmailStatus>({
     sent: false,
     verified: false,
     timerOn: false
   });
-
   const [isUsernameAvailable, setIsUsernameAvailable] = useState(false);
 
-  const handleSendVerifyCode = async (email: string) => {
+  // 타이머
+  const INTERVAL = 1000;
+  const MINUTES_IN_MS = 5 * 60 * 1000;
+  const [timeLeft, setTimeLeft] = useState<number>(MINUTES_IN_MS);
 
+  useEffect(()=>{
+    const timer = setInterval(()=>{
+      setTimeLeft((prevTime)=>(prevTime - INTERVAL));
+    }, INTERVAL);
+
+    if(timeLeft <= 0) { // 인증 타이머 종료시 관련 처리
+      clearInterval(timer);
+      setEmailStatus((prev)=>({
+        ...prev,
+        timerOn: false
+      }));
+    }
+
+    return () => { // 컴포넌트 언마운트시 인터벌 종료
+      clearInterval(timer);
+    };
+  }, [timeLeft]);
+
+  const handleSendVerifyCode = async (email: string) => {
     // 이름은 더미로 이메일만 체크
     const isAvailableEmail = await checkDuplicateUser("dummy", email);
-    
-    if(isAvailableEmail.email) {
+
+    if(isAvailableEmail && isAvailableEmail.emailAvailable) {
       // 이메일 인증 코드 보내기
       const res = await sendVerifyCode(email);
-
       if (res && res.status===202 ) { // 202: 인증 코드 전송 성공
         setEmailStatus((prev) => ({ ...prev, 
           sent: true, // 이메일 인증 코드 보냄
@@ -147,9 +168,17 @@ const SignUp = () => {
 
   const handleValidateVerifyCode = async (email: string, verifyCode: string) => {
 
-    /* 인증 번호 확인 작업... */
+    // 인증 시간이 초과되었을 때.
+    if(!emailStatus.timerOn) {
+      setError("verifyCode", {
+        type: "manual",
+        message: "인증 시간이 초과되었습니다.",
+      });
+      return
+    }
+
+    // 인증 번호 확인 작업
     const res = await ValidateVerifyCode(email, verifyCode);
-    
     if (res && res.status === 204) { // 204: 인증 성공
       setEmailStatus((prev) => ({ ...prev, 
         sent: false,
@@ -170,14 +199,14 @@ const SignUp = () => {
     // 이름은 더미로 이메일만 체크
     const isIdAvailable = await checkDuplicateUser(id, "example@example.com");
 
-    if (!isIdAvailable) {
+    if (isIdAvailable && isIdAvailable.usernameAvailable) {
+      clearErrors("id");
+      setIsUsernameAvailable(true);
+    } else {
       setError("id", {
         type: "manual",
         message: "이미 사용 중인 아이디입니다."
       });
-    } else {
-      clearErrors("id");
-      setIsUsernameAvailable(true);
     }
   }
 
@@ -233,7 +262,7 @@ const SignUp = () => {
             required: "이메일 인증은 필수 입니다.",
           })}
           disabled={!emailStatus.sent}></StyledField>
-          {emailStatus.timerOn?<StyledTimer>5:00</StyledTimer>:null}
+          {emailStatus.timerOn?<StyledTimer>{timeLeft}</StyledTimer>:null}
           <StyledBtn type="button" disabled={!emailStatus.sent} onClick={()=>{handleValidateVerifyCode(watch("email"), watch("verifyCode"))}}>확인</StyledBtn>
         </StyledFieldAndBtnWrapper>
         {
