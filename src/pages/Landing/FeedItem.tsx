@@ -3,6 +3,8 @@ import styled from "styled-components";
 import heartIcon from "../../assets/icons/heart.svg";
 import { CommentItem } from "./CommentItem";
 import { useEffect, useState } from "react";
+import type { Feed } from "../../types/Feed";
+import placeholderUrl from "../../assets/placeholder.png";
 // import { useAuthStore } from "../../stores/useAuthStore";
 
 const StyledCnt = styled.div`
@@ -103,12 +105,6 @@ const StyledBestCommentsContainer = styled.div`
   width: 100%;
 `;
 
-interface FeedContent {
-  type: "image" | "video";
-  src: string;
-  index: number;
-}
-
 interface Comment {
   username: string;
   profileUrl: string;
@@ -116,22 +112,11 @@ interface Comment {
   date: string;
 }
 
-export const FeedItem = ({ id }: { id: string }) => {
+export const FeedItem = ({ feed }: { feed: Feed }) => {
   // const accessToken = useAuthStore((state) => state.accessToken);
-  const [feedContents, setFeedContents] = useState<FeedContent[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
-  function getFeedContents(): FeedContent[] {
-    // ~~피드 콘텐츠 요청~~
-    id;
-    return [
-      { type: "image", src: "", index: 0 },
-      { type: "image", src: "", index: 1 },
-      { type: "video", src: "", index: 2 },
-    ];
-  }
   function getComments(): Comment[] {
-    // ~~댓글 요청~~
-    id;
+    // ~~댓글 요청~~~
     return [
       {
         username: "hayo",
@@ -162,12 +147,6 @@ export const FeedItem = ({ id }: { id: string }) => {
   }
 
   useEffect(() => {
-    const newFeedContents = getFeedContents();
-    setFeedContents((prev) =>
-      Array.from(
-        new Map([...prev, ...newFeedContents].map((e) => [e.index, e])).values()
-      )
-    );
     const comments = getComments();
     setComments((prev) => [...prev, ...comments]);
   }, []);
@@ -180,29 +159,29 @@ export const FeedItem = ({ id }: { id: string }) => {
         <StyledHeaderFollowButton>팔로우</StyledHeaderFollowButton>
       </StyledHeader>
       <StyledFeedContentContainer>
-        {feedContents.map((e) => (
-          <StyledFeedContent key={e.index}>
-            {e.type === "image" ? (
-              <StyledFeedContentImage
-                key={e.index}
-                src={
-                  e.src.length === 0
-                    ? "https://res.cloudinary.com/dakcrgcnt/image/upload/v1751382483/il7q5y3fwz2bykxnzdlx.png"
-                    : e.src
-                }
-              />
-            ) : (
-              <StyledFeedContentVideo
-                key={e.index}
-                src={
-                  e.src.length === 0
-                    ? "https://res.cloudinary.com/dakcrgcnt/image/upload/v1751382483/il7q5y3fwz2bykxnzdlx.png"
-                    : e.src
-                }
-              />
-            )}
+        {feed.isVideo ? (
+          <StyledFeedContent>
+            <StyledFeedContentImage
+              src={
+                feed.mediaUrls[0].length === 0
+                  ? placeholderUrl
+                  : feed.mediaUrls[0]
+              }
+            />
           </StyledFeedContent>
-        ))}
+        ) : (
+          feed.mediaUrls.map((e, i) => (
+            <StyledFeedContent key={e + i}>
+              {
+                <StyledFeedContentImage
+                  key={e + i + "2"}
+                  src={e.length === 0 ? placeholderUrl : e}
+                />
+              }
+            </StyledFeedContent>
+          ))
+        )}
+        {}
       </StyledFeedContentContainer>
       <StyledDetailContainer>
         <StyledDetailHeader>
@@ -216,7 +195,7 @@ export const FeedItem = ({ id }: { id: string }) => {
           {comments.length <= 2
             ? comments.map((e) => <CommentItem key={e.username} {...e} />)
             : comments
-                .splice(0, 2)
+                .slice(0, 2)
                 .map((e) => <CommentItem key={e.username} {...e} />)}
         </StyledBestCommentsContainer>
       </StyledDetailContainer>
