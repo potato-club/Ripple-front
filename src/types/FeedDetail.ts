@@ -2,7 +2,7 @@ export interface Feed {
   id: number;
   authorId: number;
   content: string;
-  thumbnail: string;
+  mediaUrls: string[];
   isVideo: boolean;
   tags: string[];
   likeCount: number;

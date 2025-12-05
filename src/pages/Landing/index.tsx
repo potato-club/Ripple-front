@@ -41,7 +41,7 @@ const StyledHeaderRightShortcutIcon = styled.img.attrs({ alt: "" })`
 `;
 const StyledContent = styled.div`
   flex-grow: 1;
-  overflow: hidden;
+  overflow: scroll;
   width: 100%;
 `;
 const StyledNavbarWrp = styled.div`
@@ -50,64 +50,28 @@ const StyledNavbarWrp = styled.div`
 
 function Landing() {
   // 현재까지 받은 모든 피드 저장
-  const allFeedsRef = useRef<Feed[]>([]);
-  // 현재 렌더링할 피드 상태
-  const [showingFeeds, setShowingFeeds] = useState<Feed[]>([]);
-  // 현재 피드 스크롤 인덱스
-  const [showingFeedIndex, setShowingFeedIndex] = useState(-1);
-  // 피드 스크롤 가능 여부 참조 (연속 스크롤 방지)
-  const canScrollRef = useRef(true);
-  // 피드 스크롤 타임아웃 참조
-  const canScrollTimeoutRef = useRef<null | NodeJS.Timeout>(null);
+  const [allFeedsState, setAllFeedsState] = useState<Feed[]>([]);
 
   async function getFeed(): Promise<{ ok: boolean; err?: string }> {
     try {
       const newFeed = await feedRequest();
-      const prev = allFeedsRef.current;
-      allFeedsRef.current = filterDuplicatedObjectByKey(
-        [...prev, newFeed],
-        "id"
-      );
+      const prev = allFeedsState;
+      setAllFeedsState(filterDuplicatedObjectByKey([...prev, newFeed], "id"));
       return { ok: true };
     } catch (e) {
       return { ok: false, err: String(e) };
-    }
-  }
-  function scrollNext() {
-    if (showingFeedIndex < allFeedsRef.current.length) {
-      setShowingFeedIndex((prev) => prev + 1);
-      console.log("scroll next");
-    } else {
-      console.warn("scroll next is failed (is last feed)");
-    }
-  }
-  function scrollBack() {
-    if (showingFeedIndex > 0) {
-      setShowingFeedIndex((prev) => prev - 1);
-      console.log("scroll back");
-    } else {
-      console.warn("scroll back is failed (is first feed)");
     }
   }
   useEffect(() => {
     (async () => {
       // 새 피드 받아오기
       const result = await getFeed();
-      showingFeedIndex === -1 && setShowingFeedIndex(0);
+      if (!result.ok) {
+        console.error(result.err);
+      }
     })();
   }, []);
 
-  useEffect(() => {
-    // 피드 인덱스 반영
-    let copy = showingFeeds;
-    copy = allFeedsRef.current.slice(
-      Math.max(0, showingFeedIndex - 1),
-      showingFeedIndex + 2
-    );
-    copy = filterDuplicatedObjectByKey(copy, "id");
-    setShowingFeeds(copy);
-    console.log("피드길이:", copy.length, "| 인덱스:", showingFeedIndex);
-  }, [showingFeedIndex]);
   return (
     <StyledCnt>
       <StyledHeader>
@@ -117,26 +81,8 @@ function Landing() {
           <StyledHeaderRightShortcutIcon src={dmIcon} />
         </StyledHeaderRightShortcutWrapper>
       </StyledHeader>
-      <StyledContent
-        onWheel={(e) => {
-          if (canScrollRef.current) {
-            if (e.nativeEvent.deltaY > 0) {
-              scrollNext();
-            } else if (e.nativeEvent.deltaY < 0) {
-              scrollBack();
-            }
-          }
-
-          canScrollRef.current = false;
-          canScrollTimeoutRef.current &&
-            clearTimeout(canScrollTimeoutRef.current);
-          canScrollTimeoutRef.current = setTimeout(
-            () => (canScrollRef.current = true),
-            200 // delay (ms)
-          );
-        }}
-      >
-        {showingFeeds.map((e) => (
+      <StyledContent>
+        {allFeedsState.map((e) => (
           <FeedItem key={e.id} feed={e} />
         ))}
       </StyledContent>

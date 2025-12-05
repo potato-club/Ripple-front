@@ -5,6 +5,8 @@ import { CommentItem } from "./CommentItem";
 import { useEffect, useState } from "react";
 import type { Feed } from "../../types/Feed";
 import placeholderUrl from "../../assets/placeholder.png";
+import { commentsRequest } from "../../services/commentsRequest";
+import type { Comment } from "../../types/Comment";
 // import { useAuthStore } from "../../stores/useAuthStore";
 
 const StyledCnt = styled.div`
@@ -105,50 +107,15 @@ const StyledBestCommentsContainer = styled.div`
   width: 100%;
 `;
 
-interface Comment {
-  username: string;
-  profileUrl: string;
-  content: string;
-  date: string;
-}
-
 export const FeedItem = ({ feed }: { feed: Feed }) => {
   // const accessToken = useAuthStore((state) => state.accessToken);
   const [comments, setComments] = useState<Comment[]>([]);
-  function getComments(): Comment[] {
-    // ~~댓글 요청~~~
-    return [
-      {
-        username: "hayo",
-        profileUrl: "",
-        content: "안녕하세요!",
-        date: "1일 전",
-      },
-      {
-        username: "spiderman",
-        profileUrl: "",
-        content: "여러분의 다정한 이웃 스파이더맨!",
-        date: "방금",
-      },
-      {
-        username: "username",
-        profileUrl: "",
-        content:
-          "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-        date: "1일 전",
-      },
-      {
-        username: "kinderjoy",
-        profileUrl: "",
-        content: "킨더 조이는 킨더 서프라이즈의 파생형 상품이다.",
-        date: "1일 전",
-      },
-    ];
-  }
 
   useEffect(() => {
-    const comments = getComments();
-    setComments((prev) => [...prev, ...comments]);
+    (async () => {
+      const comments = await commentsRequest();
+      setComments((prev) => [...prev, ...comments]);
+    })();
   }, []);
 
   return (
@@ -159,29 +126,11 @@ export const FeedItem = ({ feed }: { feed: Feed }) => {
         <StyledHeaderFollowButton>팔로우</StyledHeaderFollowButton>
       </StyledHeader>
       <StyledFeedContentContainer>
-        {feed.isVideo ? (
-          <StyledFeedContent>
-            <StyledFeedContentImage
-              src={
-                feed.mediaUrls[0].length === 0
-                  ? placeholderUrl
-                  : feed.mediaUrls[0]
-              }
-            />
-          </StyledFeedContent>
-        ) : (
-          feed.mediaUrls.map((e, i) => (
-            <StyledFeedContent key={e + i}>
-              {
-                <StyledFeedContentImage
-                  key={e + i + "2"}
-                  src={e.length === 0 ? placeholderUrl : e}
-                />
-              }
-            </StyledFeedContent>
-          ))
-        )}
-        {}
+        <StyledFeedContent>
+          <StyledFeedContentImage
+            src={feed.thumbnail.length === 0 ? placeholderUrl : feed.thumbnail}
+          />
+        </StyledFeedContent>
       </StyledFeedContentContainer>
       <StyledDetailContainer>
         <StyledDetailHeader>

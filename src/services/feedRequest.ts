@@ -11,10 +11,8 @@ export async function feedRequest(): Promise<Feed> {
     createdAt: new Date().getDate().toString(),
     bookmarkCount: Math.floor(Math.random() * 200),
     likeCount: Math.floor(Math.random() * 200),
-    status: "PUBLISHED",
     tags: ["food", "eat"],
-    visibility: "PUBLIC",
-    mediaUrls: ["https://placehold.co/400","https://placehold.co/400","https://placehold.co/400"],
+    thumbnail: "https://placehold.co/400",
     isVideo: false,
     content: "TEMP",
   };
