@@ -107,7 +107,13 @@ const StyledBestCommentsContainer = styled.div`
   width: 100%;
 `;
 
-export const FeedItem = ({ feed }: { feed: Feed }) => {
+export const FeedItem = ({
+  feed,
+  onClick,
+}: {
+  feed: Feed;
+  onClick: () => void;
+}) => {
   // const accessToken = useAuthStore((state) => state.accessToken);
   const [comments, setComments] = useState<Comment[]>([]);
 
@@ -119,7 +125,7 @@ export const FeedItem = ({ feed }: { feed: Feed }) => {
   }, []);
 
   return (
-    <StyledCnt>
+    <StyledCnt onClick={onClick}>
       <StyledHeader>
         <StyledHeaderProfileImage />
         <StyledHeaderUsername>@{"username"}</StyledHeaderUsername>

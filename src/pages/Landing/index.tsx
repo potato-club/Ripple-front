@@ -9,6 +9,8 @@ import { useEffect, useRef, useState } from "react";
 import { filterDuplicatedObjectByKey } from "../../utils/filterDuplicatedObjectByKey";
 import { feedRequest } from "../../services/feedRequest";
 import type { Feed } from "../../types/Feed";
+import { Fullscreen } from "./Fullscreen";
+import type { FeedDetail } from "../../types/FeedDetail";
 
 const StyledCnt = styled.div`
   display: flex;
@@ -43,6 +45,7 @@ const StyledContent = styled.div`
   flex-grow: 1;
   overflow: scroll;
   width: 100%;
+  position: relative;
 `;
 const StyledNavbarWrp = styled.div`
   height: 80px;
@@ -72,6 +75,9 @@ function Landing() {
     })();
   }, []);
 
+  const [isFullscreenShowing, setIsFullscreenShowing] = useState(false);
+  const [fullscreenFeed, setFullscreenFeed] = useState<Feed | null>(null);
+
   return (
     <StyledCnt>
       <StyledHeader>
@@ -83,9 +89,23 @@ function Landing() {
       </StyledHeader>
       <StyledContent>
         {allFeedsState.map((e) => (
-          <FeedItem key={e.id} feed={e} />
+          <FeedItem
+            key={e.id}
+            feed={e}
+            onClick={() => {
+              setIsFullscreenShowing(true);
+              setFullscreenFeed(e);
+            }}
+          />
         ))}
       </StyledContent>
+      {isFullscreenShowing && fullscreenFeed && (
+        <Fullscreen
+          feedId={fullscreenFeed.id}
+          isVideo={fullscreenFeed.isVideo}
+          authorId={fullscreenFeed.authorId}
+        />
+      )}
       <StyledNavbarWrp>
         <Navbar />
       </StyledNavbarWrp>
