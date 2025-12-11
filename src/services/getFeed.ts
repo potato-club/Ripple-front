@@ -22,23 +22,54 @@ function isFeed(obj: any): obj is Feed {
   return isScalarFieldsValid && isMediaUrlsValid && isTagsValid;
 }
 
+interface UserProfile {
+  gender: "male" | "female";
+  name: { first: string; last: string; title: string };
+  location: string;
+  email: string;
+  login: string;
+  dob: string; // 생일 정보
+  registered: string; // 등록일 정보
+  phone: string;
+  cell: string;
+  id: string; // 국가 ID (예: PPS)
+  picture: string;
+  nat: string; // 국적 (예: IE)
+}
+
+interface RandomUserResponse {
+  results: UserProfile[];
+  info: never;
+}
+
 export const getFeed = async (): Promise<Feed | false> => {
   try {
     // const res = await axios.get<Feed>(
     //   `${import.meta.env.VITE_API_URL}/getFeed`
     // );
     // const data = res.data;
-    const data: Feed = {
-      authorId: 1,
-      bookmarkCount: 1,
-      content: "",
-      createdAt: "",
-      id: Math.random(),
-      likeCount: 1,
-      mediaUrls: [],
-      tags: [],
-      username: "",
-    };
+    async function getDummyFeed(): Promise<Feed> {
+      const user = await axios
+        .get<RandomUserResponse>("https://randomuser.me/api/")
+        .then((res) => res.data);
+      const username =
+        user.results[0].name.first + " " + user.results[0].name.last;
+      const feed: Feed = {
+        authorId: Math.floor(Math.random() * 1000000),
+        content: await axios
+          .get("https://baconipsum.com/api/?type=all-meat&paras=3&format=text")
+          .then((res) => res.data),
+        id: Math.floor(Math.random() * 1000000),
+        username: username,
+        mediaUrls: [],
+        tags: [],
+        likeCount: Math.floor(Math.random() * 1000),
+        bookmarkCount: Math.floor(Math.random() * 500),
+        createdAt: new Date().toISOString(),
+      };
+      return feed;
+    }
+    const data: Feed = await getDummyFeed();
 
     if (isFeed(data)) {
       return data;
