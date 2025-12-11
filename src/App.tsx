@@ -9,6 +9,7 @@ import Settings from "./pages/Settings";
 import FindIDPW from "./pages/FindIDPW";
 import Search from "./pages/Search";
 import Upload from "./pages/Upload";
+import FeedPage from "./pages/Feed";
 
 const StyledDesktopErrorCnt = styled.div`
   display: flex;
@@ -22,7 +23,8 @@ function App() {
   return isMobile ? (
     <BrowserRouter>
       <Routes>
-        <Route index element={<Landing />} />
+        {/* <Route index element={<Landing />} /> */}
+        <Route index element={<FeedPage />} />
         <Route path="/:username" element={<Profile />} />
         <Route path="/search" element={<Search/>} />
         <Route path="/upload" element={<Upload/>} />
