@@ -1,7 +1,6 @@
 import { axiosInstance } from "../axiosClient";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { isAxiosError } from "axios";
-import type { ApiErrorResponse } from "../../types/apiErrorResponse";
 
 export const LogOut = async () => {
   try {
@@ -12,7 +11,7 @@ export const LogOut = async () => {
     );
     return res;
   } catch(error) {
-    if(isAxiosError<ApiErrorResponse>(error)) {
+    if(isAxiosError(error)) {
       console.log(error.response?.data);
       return error.response;
     }

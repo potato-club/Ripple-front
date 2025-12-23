@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/useAuthStore';
-import { refreshToken } from './Auth/refreshToken';
+import { RefreshToken } from './Auth/RefreshToken'
 
 export const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -27,7 +27,7 @@ axiosInstance.interceptors.response.use(
 
       try {
         // refresh token으로 새로운 access token 발급
-        const { accessToken: newAccessToken } = await refreshToken(useAuthStore.getState().deviceId);
+        const { accessToken: newAccessToken } = await RefreshToken(useAuthStore.getState().deviceId);
 
         // Zustand 스토어에 토큰 업데이트
         useAuthStore.setState({ accessToken: newAccessToken });

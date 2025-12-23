@@ -1,8 +1,7 @@
 import { isAxiosError } from "axios";
 import {axiosInstance} from "../axiosClient";
-import type { ApiErrorResponse } from "../../types/apiErrorResponse";
 
-export const refreshToken = async (deviceId: string) => {
+export const RefreshToken = async (deviceId: string) => {
   try {
     const res = await axiosInstance.post(`/api/auth/refresh`, 
       {
@@ -13,7 +12,7 @@ export const refreshToken = async (deviceId: string) => {
     );
     return res.data;
   } catch (error) {
-    if(isAxiosError<ApiErrorResponse>(error)) {
+    if(isAxiosError(error)) {
       console.log(error.response?.data);
       return error.response;
     }
