@@ -1,46 +1,53 @@
-import axios from 'axios';
-import { useAuthStore } from '../stores/useAuthStore';
-import { RefreshToken } from './Auth/RefreshToken'
+import axios, { isAxiosError } from "axios";
+import { refreshToken } from "./Auth/refreshToken";
+import { getCookie } from "../utils/getCookie";
 
 export const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true // 쿠키 인증 포함
+  withCredentials: true, // 쿠키 인증 포함
 });
 
-// 요청시 엑세스 토큰 같이 보내기
-axiosInstance.interceptors.request.use((request)=>{
-  const { accessToken } = useAuthStore.getState();
+// 요청
+axiosInstance.interceptors.request.use((request) => {
+  // AT 포함
+  const accessToken = getCookie(
+    `${import.meta.env.VITE_COOKIE_PATH_ACCESSTOKEN}`
+  );
   if (accessToken) {
     request.headers.Authorization = `Bearer ${accessToken}`;
   }
+  // else {
+  //   // AT 없으면 취소
+  //   return Promise.reject("AT is not Found");
+  // }
   return request;
 });
 
+// 응답
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
-    console.log(originalRequest)
-    // 401 Unauthorized(임시) && 토큰 요청 재시도 안 한 경우
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true; // 재시도 표시
+    // AxiosError 아니면 처리 안 함
+    if (!isAxiosError(error)) return error;
 
+    const originalRequest = error.config;
+    // 임시
+    if (!originalRequest) return Promise.reject(error);
+    console.log("[Axios] Original Request:", originalRequest);
+
+    // 401 Unauthorized
+    if (error.response?.status === 401) {
       try {
         // refresh token으로 새로운 access token 발급
-        const { accessToken: newAccessToken } = await RefreshToken(useAuthStore.getState().deviceId);
-
-        // Zustand 스토어에 토큰 업데이트
-        useAuthStore.setState({ accessToken: newAccessToken });
-
+        const newAccessToken = await refreshToken();
         // 실패했던 요청에 새로운 토큰 재적용
-        originalRequest.headers = originalRequest.headers || {};
+        // originalRequest.headers = originalRequest.headers || {};
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
         // 요청 재시도
         return axios(originalRequest);
       } catch (refreshError) {
         // 토큰 재발급 실패 → 로그아웃 처리 등
-        useAuthStore.setState({ accessToken: null });
         return Promise.reject(refreshError);
       }
     }
