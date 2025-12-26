@@ -7,6 +7,9 @@ import rippleIcon from "../../assets/ripple-icon.png";
 import directMessageIcon from "../../assets/icons/dm.svg";
 import type { Comment } from "../../types/Comment";
 import { getComments } from "../../services/getComments";
+import { useAuthStore } from "../../stores/useAuthStore";
+import { useNavigate } from "react-router";
+import { getCookie } from "../../utils/getCookie";
 
 const SCnt = styled.div`
   background-color: #222;
@@ -82,18 +85,52 @@ const SFeedComment = styled.div`
   overflow: hidden;
   margin-bottom: 8px;
 `;
+const SNoFeeds = styled.div`
+  font-size: 24px;
+  color: #eee;
+  width: fit-content;
+  margin: auto;
+  margin-top: 64px;
+`;
 
 const FeedPage = () => {
+  const isLoggedIn = useAuthStore((state) => state.isLogIn);
+  const checkIsLoggedIn = useAuthStore((state) => state.checkIsLoggedIn);
+  const navigate = useNavigate();
   const [feeds, setFeeds] = useState<Feed[]>([]);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<{ [key: number]: Comment[] }>({});
+  const [noFeeds, setNoFeeds] = useState<boolean>(false);
   useEffect(() => {
+    if (!isLoggedIn && checkIsLoggedIn()) {
+      navigate("/login");
+    }
     (async () => {
+      // 피드 로드
+      // let feeds = (
+      //   await Promise.all(Array.from({ length: 10 }, () => getFeed()))
+      // ).filter((feed) => feed !== false);
       const feed = await getFeed();
-      if (feed) setFeeds((prev) => [...prev, feed]);
+      console.log(feed);
+      if (feed === "NoFeeds") setNoFeeds(true);
+      else if (feed) {
+        setFeeds((prev) => {const a = [...prev, ...feed.feeds]; console.log(a);return a;});
+        setNoFeeds(false);
+      }
+      // if (feeds) setFeeds((prev) => [...prev, ...feeds]);
       else console.error("피드 로드 실패");
-      const comments = await getComments();
-      if (comments) setComments(comments);
-      else console.error("댓글 로드 실패");
+
+      // 댓글 로드
+      feeds.forEach(async (feed) => {
+        try {
+          const res = await getComments(feed.id);
+          if (res) {
+            const copy = comments;
+            copy[feed.id] = res;
+          }
+        } catch (err) {
+          console.error("댓글 로드 실패: " + err);
+        }
+      });
     })();
   }, []);
   return (
@@ -104,23 +141,27 @@ const FeedPage = () => {
           <SDirectMessage />
         </SHeader>
         <SFeedsWrp>
-          {feeds.map((feed) => (
-            <SFeed key={feed.id}>
-              <SFeedContents></SFeedContents>
-              <SFeedBody>
-                <SFeedHeader>
-                  <SFeedAuthor>{feed.username}</SFeedAuthor>
-                </SFeedHeader>
-                <SFeedComments>
-                  {comments.slice(0, 3).map((comment) => (
-                    <SFeedComment key={comment.id}>
-                      <strong>{comment.username}</strong>: {comment.content}
-                    </SFeedComment>
-                  ))}
-                </SFeedComments>
-              </SFeedBody>
-            </SFeed>
-          ))}
+          {noFeeds ? (
+            <SNoFeeds>모든 피드를 시청했습니다.</SNoFeeds>
+          ) : (
+            feeds.map((feed) => (
+              <SFeed key={feed.id}>
+                <SFeedContents></SFeedContents>
+                <SFeedBody>
+                  <SFeedHeader>
+                    <SFeedAuthor>{feed.username}</SFeedAuthor>
+                  </SFeedHeader>
+                  <SFeedComments>
+                    {comments[feed.id].slice(0, 3).map((comment) => (
+                      <SFeedComment key={comment.id}>
+                        <strong>{comment.username}</strong>: {comment.content}
+                      </SFeedComment>
+                    ))}
+                  </SFeedComments>
+                </SFeedBody>
+              </SFeed>
+            ))
+          )}
         </SFeedsWrp>
       </SBody>
       <Navbar />

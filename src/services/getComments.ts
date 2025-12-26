@@ -1,5 +1,5 @@
-import axios from "axios";
 import type { Comment } from "../types/Comment";
+import { axiosInstance } from "./axiosClient";
 
 function isComments(arr: any): arr is Comment[] {
   for (const e of arr) {
@@ -16,52 +16,14 @@ function isComments(arr: any): arr is Comment[] {
   return true;
 }
 
-interface UserProfile {
-  gender: "male" | "female";
-  name: { first: string; last: string; title: string };
-  location: string;
-  email: string;
-  login: string;
-  dob: string; // 생일 정보
-  registered: string; // 등록일 정보
-  phone: string;
-  cell: string;
-  id: string; // 국가 ID (예: PPS)
-  picture: string;
-  nat: string; // 국적 (예: IE)
-}
-
-interface RandomUserResponse {
-  results: UserProfile[];
-  info: never;
-}
-
-export const getComments = async (): Promise<Comment[] | false> => {
+export const getComments = async (
+  feedId: number
+): Promise<Comment[] | false> => {
   try {
-    // const res = await axios.get<Feed>(
-    //   `${import.meta.env.VITE_API_URL}/getComments`
-    // );
-    // const data = res.data;
-    async function getDummyComment(): Promise<Comment> {
-      const user = await axios
-        .get<RandomUserResponse>("https://randomuser.me/api/")
-        .then((res) => res.data);
-      const username =
-        user.results[0].name.first + " " + user.results[0].name.last;
-      const comment: Comment = {
-        authorId: Math.floor(Math.random() * 1000000),
-        content: await axios
-          .get("https://baconipsum.com/api/?type=all-meat&paras=3&format=text")
-          .then((res) => res.data),
-        id: Math.floor(Math.random() * 1000000),
-        username: username,
-      };
-      return comment;
-    }
-    const promises = Array(5)
-      .fill(0)
-      .map(() => getDummyComment());
-    const data: Comment[] = await Promise.all(promises);
+    const res = await axiosInstance.get<Comment>(
+      `${import.meta.env.VITE_API_URL}/feeds/${feedId}/comments`
+    );
+    const data = res.data;
 
     if (isComments(data)) {
       return data;
