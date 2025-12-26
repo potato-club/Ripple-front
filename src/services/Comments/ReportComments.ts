@@ -21,7 +21,7 @@ export interface ReportCommentsResponse {
  * 기존 신고 상태(REVIEWING/RESOLVED/REJECTED)에 따라 메시지가 달라질 수 있습니다.
  */
 
-export const ReportComments = async (commentId : string, category: categoryType, reason: string) => {
+export const ReportComments = async (commentId : number, category: categoryType, reason: string) => {
   try {
     const res = await axiosInstance.post<ReportCommentsResponse>(`/api/comments/${commentId}/reports`, {
         category: category, 
@@ -33,5 +33,6 @@ export const ReportComments = async (commentId : string, category: categoryType,
       console.log("status:", error.response?.status);
       console.log(error.response?.data);
     }
+    throw error;
   }
 };

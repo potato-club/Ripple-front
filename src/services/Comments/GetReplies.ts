@@ -1,7 +1,7 @@
 import { isAxiosError } from "axios";
 import {axiosInstance} from "../axiosClient";
 
-type CommentSort = "LATEST" | "MOST_LIKED";
+type CommentSortType = "LATEST" | "MOST_LIKED";
 
 export interface GetRepliesResponse {
   comments: [
@@ -32,7 +32,7 @@ export interface GetRepliesResponse {
  * 요청 feedId와 루트 댓글의 feedId가 다르면 실패합니다(INVALID_COMMENT_THREAD).
  */
 
-export const GetReplies = async (feedId : string, commentId : string, cursorId: string, size: string, sort: CommentSort) => {
+export const GetReplies = async (feedId : number, commentId : number, cursorId: number, size: number, sort: CommentSortType) => {
   try {
     const res = await axiosInstance.get<GetRepliesResponse>(`/api/feeds/${feedId}/comments/${commentId}/replies`, {params: {
         cursorId: cursorId, 
@@ -45,5 +45,6 @@ export const GetReplies = async (feedId : string, commentId : string, cursorId: 
       console.log("status:", error.response?.status);
       console.log(error.response?.data);
     }
+    throw error;
   }
 };

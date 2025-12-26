@@ -1,7 +1,7 @@
 import { isAxiosError } from "axios";
 import {axiosInstance} from "../axiosClient";
 
-export const DeleteLikeComments = async (commentId : string) => {
+export const DeleteLikeComments = async (commentId : number) => {
   try {
     const res = await axiosInstance.delete(`/api/comments/${commentId}/likes`);
     return res.data;
@@ -10,5 +10,6 @@ export const DeleteLikeComments = async (commentId : string) => {
       console.log("status:", error.response?.status);
       console.log(error.response?.data);
     }
+    throw error;
   }
 };

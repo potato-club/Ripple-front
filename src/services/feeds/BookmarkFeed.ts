@@ -1,10 +1,10 @@
 import { isAxiosError } from "axios";
 import {axiosInstance} from "../axiosClient";
 
-export const DeleteComments = async (commentId : number) => {
+export const BookmarkFeed = async (feedId : number) => {
   try {
-    const res = await axiosInstance.delete(`/api/comments/${commentId}`);
-    return res.data;
+    const res = await axiosInstance.post(`/api/feeds/${feedId}/bookmarks`);
+    return res;
   } catch (error) {
     if(isAxiosError(error)) {
       console.log("status:", error.response?.status);
@@ -12,4 +12,4 @@ export const DeleteComments = async (commentId : number) => {
     }
     throw error;
   }
-};
+}

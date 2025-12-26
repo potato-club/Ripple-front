@@ -1,7 +1,7 @@
 import { isAxiosError } from "axios";
 import {axiosInstance} from "../axiosClient";
 
-type CommentSort = "LATEST" | "MOST_LIKED";
+type CommentSortType = "LATEST" | "MOST_LIKED";
 
 export interface GetCommentsResponse {
   comments: [
@@ -32,7 +32,7 @@ export interface GetCommentsResponse {
  * sort=MOST_LIKED: 좋아요순(커서 페이징 비활성: nextCursor=null, hasNext=false)
  */
 
-export const GetComments = async (feedId : string, cursorId: string, size: string, sort: CommentSort) => {
+export const GetComments = async (feedId : number, cursorId: number, size: number, sort: CommentSortType) => {
   try {
     const res = await axiosInstance.get<GetCommentsResponse>(`/api/feeds/${feedId}/comments`, {params: {
         cursorId: cursorId,
@@ -45,5 +45,6 @@ export const GetComments = async (feedId : string, cursorId: string, size: strin
       console.log("status:", error.response?.status);
       console.log(error.response?.data);
     }
+    throw error;
   }
 };

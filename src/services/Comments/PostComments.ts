@@ -24,7 +24,7 @@ export interface PostCommentsResponse {
  * parentId가 있으면 대댓글(답글)이며, parent 댓글의 feedId와 요청 feedId가 다르면 실패합니다.
  */
 
-export const PostComments = async (feedId : string, parentId: string | null, content: string) => {
+export const PostComments = async (feedId : number, parentId: number | null, content: string) => {
   try {
     let res;
     if (parentId !== null) {
@@ -45,5 +45,6 @@ export const PostComments = async (feedId : string, parentId: string | null, con
       console.log("status:", error.response?.status);
       console.log(error.response?.data);
     }
+    throw error;
   }
 };

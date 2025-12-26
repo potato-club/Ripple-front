@@ -1,9 +1,15 @@
 import { isAxiosError } from "axios";
 import {axiosInstance} from "../axiosClient";
 
-export const DeleteComments = async (commentId : number) => {
+export interface SearchTagResponse {
+  Items: string[]
+}
+
+export const SearchTag = async (query : string) => {
   try {
-    const res = await axiosInstance.delete(`/api/comments/${commentId}`);
+    const res = await axiosInstance.get<SearchTagResponse>(`/api/feeds/search/tag`, {params: {
+        query: query
+    }});
     return res.data;
   } catch (error) {
     if(isAxiosError(error)) {
