@@ -6,6 +6,9 @@ import Navbar from "../../components/Navbar";
 import { HideScrollbar } from "../../styles/HideScrollbar";
 import { FeedCard } from "./FeedCard";
 import { ReplyItem } from "./ReplyItem";
+import { getProfileByUsername } from "../../services/User/getProfileByUsername";
+import type { Comment } from "../../types/Comment";
+import noProfileImageSrc from "../../assets/icons/account.svg";
 
 const StyledCnt = styled.div`
   height: 100%;
@@ -55,11 +58,8 @@ const StyledProfileSection = styled.div`
   align-items: center;
   justify-content: space-around;
 `;
-const StyledProfileImage = styled.div<{ img?: string }>`
-  background-image: ${(props) =>
-    props.img
-      ? `url(${props.img})`
-      : "url(https://avatar.iran.liara.run/public)"};
+const StyledProfileImage = styled.div<{ $img: string }>`
+  background-image: ${(props) => `url("${props.$img}")`};
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
@@ -110,99 +110,115 @@ const StyledNavbarWrapper = styled.div`
   height: 85px;
   position: relative;
 `;
-
-interface Reply {
-  img: string;
-  username: string;
-  date: string;
-  content: string;
-}
+const StyledUserNotFound = styled.div`
+  flex-grow: 1;
+  font-size: 24px;
+  text-align: center;
+  padding-top: 64px;
+`;
 
 const Profile = () => {
+  const [userNotFound, setUserNotFound] = useState(false);
   const navigator = useNavigate();
   const { username } = useParams<{ username: string }>();
   const [profileImgSrc, setProfileImgSrc] = useState<string>();
-  const [replies] = useState<Reply[]>([
-    { username: "asdf", content: "Lorem Ipsum is simply dummy text of the printing and typ", date: "어제", img: "asdf" },
-    { username: "asdf", content: "안녕하세요!", date: "어제", img: "asdf" },
-  ]);
+  const [comments] = useState<Comment[]>([]);
   const [feeds] = useState([1, 2, 3, 4, 5, 6, 7, 8]);
 
   const [postCount] = useState(5);
   const [followerCount] = useState(12);
   const [followingCount] = useState(32);
 
-  function getUserInfo(username: string) {
-    console.log(`${username}의 정보를 요청합니다.`);
-    return {
-      displayName: "임시이름",
-      profileImgSrc:
-        "https://res.cloudinary.com/dakcrgcnt/image/upload/v1754237963/testprofileimage.png",
-    };
+  async function getUserProfile(username: string) {
+    // const myProfile = await getMyProfile();
+    const userProfile = await getProfileByUsername(username);
+    if (!userProfile) {
+      console.error("Failed to get profile");
+      return false;
+    }
+    return userProfile;
   }
 
   useEffect(() => {
     if (username) {
-      const { displayName, profileImgSrc } = getUserInfo(username);
-      setProfileImgSrc(profileImgSrc);
+      (async () => {
+        const userProfile = await getUserProfile(username);
+        if (!userProfile) {
+          setUserNotFound(true);
+          document.title = "Ripple | 알 수 없는 사용자";
+          return;
+        }
+        setProfileImgSrc(userProfile.profileImageUrl);
 
-      document.title = displayName
-        ? `Ripple | ${displayName}의 프로필`
-        : `Ripple | ${username}의 프로필`;
+        document.title = `Ripple | ${userProfile.username}의 프로필`;
+      })();
     } else {
+      setUserNotFound(true);
       document.title = "Ripple | 알 수 없는 사용자";
     }
   }, [username]);
 
   return (
     <StyledCnt>
-      <StyledHeader>
-        <StyledUsername>{username}</StyledUsername>
-        <StyledSettingBtn onClick={() => navigator("/settings")} />
-      </StyledHeader>
+      {userNotFound ? (
+        <StyledUserNotFound>사용자를 찾을 수 없습니다</StyledUserNotFound>
+      ) : (
+        <>
+          <StyledHeader>
+            <StyledUsername>{username}</StyledUsername>
+            <StyledSettingBtn onClick={() => navigator("/settings")} />
+          </StyledHeader>
 
-      <StyledContent>
-        <StyledProfileSection>
-          <StyledProfileImage img={profileImgSrc} />
-          <StyledProfileInfoItem>
-            게시
-            <br />
-            {postCount}
-          </StyledProfileInfoItem>
-          <StyledProfileInfoItem>
-            팔로워
-            <br />
-            {followerCount}
-          </StyledProfileInfoItem>
-          <StyledProfileInfoItem>
-            팔로잉
-            <br />
-            {followingCount}
-          </StyledProfileInfoItem>
-        </StyledProfileSection>
+          <StyledContent>
+            <StyledProfileSection>
+              <StyledProfileImage $img={profileImgSrc ?? noProfileImageSrc} />
+              <StyledProfileInfoItem>
+                게시
+                <br />
+                {postCount}
+              </StyledProfileInfoItem>
+              <StyledProfileInfoItem>
+                팔로워
+                <br />
+                {followerCount}
+              </StyledProfileInfoItem>
+              <StyledProfileInfoItem>
+                팔로잉
+                <br />
+                {followingCount}
+              </StyledProfileInfoItem>
+            </StyledProfileSection>
 
-        <StyledScrollAreaOut>
-          <StyledScrollAreaIn>
-            <StyledReplySection>
-              <StyledSectionTitle>최근 활동</StyledSectionTitle>
-              <StyledRepliesWrapper>
-                {replies.map((reply, i) => (
-                  <ReplyItem key={i} {...reply} />
-                ))}
-              </StyledRepliesWrapper>
-            </StyledReplySection>
+            <StyledScrollAreaOut>
+              <StyledScrollAreaIn>
+                <StyledReplySection>
+                  <StyledSectionTitle>최근 활동</StyledSectionTitle>
+                  <StyledRepliesWrapper>
+                    {comments.map((cmt) => (
+                      <ReplyItem
+                        key={cmt.id}
+                        username={cmt.username}
+                        content={cmt.content}
+                        date={cmt.id.toString()}
+                        img={""}
+                      />
+                    ))}
+                  </StyledRepliesWrapper>
+                </StyledReplySection>
 
-            <StyledFeedSection>
-              <StyledSectionTitle>게시한 피드</StyledSectionTitle>
-              <StyledFeedWrapper>
-                {feeds.map((feed, i) => (
-                  <FeedCard key={i} />
-                ))}
-              </StyledFeedWrapper>
-            </StyledFeedSection>
-          </StyledScrollAreaIn>
-        </StyledScrollAreaOut>
-      </StyledContent>
+                <StyledFeedSection>
+                  <StyledSectionTitle>게시한 피드</StyledSectionTitle>
+                  <StyledFeedWrapper>
+                    {feeds.map((feed, i) => (
+                      <FeedCard key={i} />
+                    ))}
+                  </StyledFeedWrapper>
+                </StyledFeedSection>
+              </StyledScrollAreaIn>
+            </StyledScrollAreaOut>
+          </StyledContent>
+        </>
+      )}
 
       <StyledNavbarWrapper>
         <Navbar />
