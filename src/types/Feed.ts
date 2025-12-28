@@ -1,9 +1,12 @@
+import type { Author } from "./Author";
+
 export interface Feed {
   id: number;
   thumbnail: string | null;
-  author: {id: number, username: string, profileImageUrl: string | null};
-  username: string;
-  content: string;
+  author: Author;
+  content: string | null;
+  feedStatus: "PUBLISHED";
+  visibility: "PUBLIC";
   mediaUrls: string[];
   tags: string[];
   likeCount: number;

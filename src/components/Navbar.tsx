@@ -18,6 +18,7 @@ const StyledCnt = styled.div`
 `;
 const StyledShortcut = styled.img`
   height: 60px;
+  padding: 6px;
   cursor: pointer;
 `;
 

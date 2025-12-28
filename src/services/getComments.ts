@@ -1,27 +1,40 @@
 import type { Comment } from "../types/Comment";
 import { axiosInstance } from "./axiosClient";
+import z from "zod";
 
-function isComments(arr: any): arr is Comment[] {
-  for (const e of arr) {
-    if (
-      typeof e.id !== "number" ||
-      typeof e.authorId !== "number" ||
-      typeof e.username !== "string" ||
-      typeof e.content !== "string"
-    ) {
-      return false;
-    }
-  }
+const CommentSchema = z.object({
+  id: z.number(),
+  authorId: z.number(),
+  username: z.string(),
+  content: z.string(),
+});
 
-  return true;
+const CommentsSchema = z.object({
+  comments: z.array(CommentSchema),
+  hasNext: z.boolean(),
+  nextCursor: z.number().nullable(),
+});
+
+type CommentsResponse = z.infer<typeof CommentsSchema>;
+
+function isComments(arr: any): arr is CommentsResponse {
+  return CommentsSchema.safeParse(arr).success;
 }
 
 export const getComments = async (
-  feedId: number
-): Promise<Comment[] | false> => {
+  feedId: number,
+  size?: number
+): Promise<CommentsResponse | false> => {
   try {
-    const res = await axiosInstance.get<Comment>(
-      `${import.meta.env.VITE_API_URL}/feeds/${feedId}/comments`
+    const res = await axiosInstance.get<CommentsResponse>(
+      `api/feeds/${feedId}/comments`,
+      {
+        params: {
+          cursorId: 0,
+          size: size ?? 3,
+          sort: "LATEST",
+        },
+      }
     );
     const data = res.data;
 
