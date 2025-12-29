@@ -1,4 +1,4 @@
-import axios, { isAxiosError } from "axios";
+import axios, { AxiosError, isAxiosError } from "axios";
 import { refreshToken } from "./Auth/refreshToken";
 import { getCookie } from "../utils/getCookie";
 
@@ -15,11 +15,10 @@ axiosInstance.interceptors.request.use((request) => {
   );
   if (accessToken) {
     request.headers.Authorization = `Bearer ${accessToken}`;
+  } else {
+    // AT 없으면 취소
+    return Promise.reject("AT is not Found");
   }
-  // else {
-  //   // AT 없으면 취소
-  //   return Promise.reject("AT is not Found");
-  // }
   return request;
 });
 
@@ -33,7 +32,7 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error.config;
     // 임시
     if (!originalRequest) return Promise.reject(error);
-    console.log("[Axios] Original Request:", originalRequest);
+    console.log("[AxiosInstance] Original Request:", originalRequest);
 
     // 401 Unauthorized
     if (error.response?.status === 401) {
@@ -41,13 +40,16 @@ axiosInstance.interceptors.response.use(
         // refresh token으로 새로운 access token 발급
         const newAccessToken = await refreshToken();
         // 실패했던 요청에 새로운 토큰 재적용
-        // originalRequest.headers = originalRequest.headers || {};
+        originalRequest.headers = originalRequest.headers || {};
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
         // 요청 재시도
         return axios(originalRequest);
       } catch (refreshError) {
         // 토큰 재발급 실패 → 로그아웃 처리 등
+        if (refreshError instanceof AxiosError)
+          console.error("[JWT] Refresh error.", refreshError.response?.data);
+        else console.error("[JWT] Refresh error.", refreshError);
         return Promise.reject(refreshError);
       }
     }

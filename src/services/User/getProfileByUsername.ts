@@ -1,22 +1,30 @@
 import { isAxiosError } from "axios";
-import {axiosInstance} from "../axiosClient";
+import { axiosInstance } from "../axiosClient";
+import z from "zod";
 
-export interface getProfileByUsernameResponse {
-  id: number,
-  username: string,
-  profileImageUrl: string,
-  postCount: number,
-  followerCount: number,
-  followingCount: number,
-}
+const ProfileByUsernameSchema = z.object({
+  id: z.number(),
+  username: z.string(),
+  profileImageUrl: z.string(),
+  postCount: z.number(),
+  followerCount: z.number(),
+  followingCount: z.number(),
+});
 
-export const GetProfileByUsername = async (username: string) => {
+type ProfileByUsernameResponse = z.infer<typeof ProfileByUsernameSchema>;
+
+export const getProfileByUsername = async (username: string) => {
   try {
-    const res = await axiosInstance.get<getProfileByUsernameResponse>(`/api/users/by-username/${username}`);
-    return res.data;
+    const res = await axiosInstance.get<ProfileByUsernameResponse>(
+      `/api/users/by-username/${username}`
+    );
+    if (res && ProfileByUsernameSchema.safeParse(res.data)) return res.data;
   } catch (error) {
-    if(isAxiosError(error)) {
-      console.log(error.response?.data);
+    if (isAxiosError(error)) {
+      console.log(error);
+    } else {
+      console.log(error)
     }
   }
+  return false;
 };

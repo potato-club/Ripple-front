@@ -2,7 +2,6 @@ import styled from "styled-components";
 import Navbar from "../../components/Navbar";
 import { useEffect, useState } from "react";
 import type { Feed } from "../../types/Feed";
-import { getFeed } from "../../services/getFeed";
 import rippleIcon from "../../assets/ripple-icon.png";
 import directMessageIcon from "../../assets/icons/dm.svg";
 import type { Comment } from "../../types/Comment";
@@ -10,6 +9,9 @@ import { getComments } from "../../services/getComments";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useNavigate } from "react-router";
 import { getCookie } from "../../utils/getCookie";
+import { getUniqueBy } from "../../utils/getUniqueBy";
+import { axiosInstance } from "../../services/axiosClient";
+import { getFeed } from "../../services/feeds/getFeed";
 
 const SCnt = styled.div`
   background-color: #222;
@@ -42,26 +44,27 @@ const SFeed = styled.div`
   aspect-ratio: 2/3;
   border: 1px solid #555;
 `;
-const SFeedContents = styled.div`
+const SFeedContent = styled.div``;
+const SFeedMediaContents = styled.div`
   display: flex;
   overflow-x: scroll;
   width: 100%;
   aspect-ratio: 1/1;
 `;
-const SFeedContentImageWrp = styled.div`
+const SFeedMediaContentImageWrp = styled.div`
   height: 100%;
   overflow: hidden;
   aspect-ratio: 1/1;
 `;
-const SFeedContentVideoWrp = styled.div`
+const SFeedMediaContentVideoWrp = styled.div`
   height: 100%;
   overflow: hidden;
   aspect-ratio: 1/1;
 `;
-const SFeedContentImage = styled.img`
+const SFeedMediaContentImage = styled.img`
   height: 100%;
 `;
-const SFeedContentVideo = styled.video`
+const SFeedMediaContentVideo = styled.video`
   height: 100%;
 `;
 const SFeedBody = styled.div`
@@ -70,7 +73,7 @@ const SFeedBody = styled.div`
   overflow: hidden;
 `;
 const SFeedHeader = styled.div`
-  display: flex;
+  /* display: flex; */
   padding: 8px 16px;
 `;
 const SFeedAuthor = styled.div``;
@@ -93,12 +96,14 @@ const SNoFeeds = styled.div`
   margin-top: 64px;
 `;
 
+type Comments = Record<string, Comment[]>;
+
 const FeedPage = () => {
   const isLoggedIn = useAuthStore((state) => state.isLogIn);
   const checkIsLoggedIn = useAuthStore((state) => state.checkIsLoggedIn);
   const navigate = useNavigate();
   const [feeds, setFeeds] = useState<Feed[]>([]);
-  const [comments, setComments] = useState<{ [key: number]: Comment[] }>({});
+  const [comments, setComments] = useState<Comments>({});
   const [noFeeds, setNoFeeds] = useState<boolean>(false);
   useEffect(() => {
     if (!isLoggedIn && checkIsLoggedIn()) {
@@ -109,30 +114,53 @@ const FeedPage = () => {
       // let feeds = (
       //   await Promise.all(Array.from({ length: 10 }, () => getFeed()))
       // ).filter((feed) => feed !== false);
-      const feed = await getFeed();
-      console.log(feed);
-      if (feed === "NoFeeds") setNoFeeds(true);
-      else if (feed) {
-        setFeeds((prev) => {const a = [...prev, ...feed.feeds]; console.log(a);return a;});
-        setNoFeeds(false);
-      }
-      // if (feeds) setFeeds((prev) => [...prev, ...feeds]);
-      else console.error("피드 로드 실패");
-
-      // 댓글 로드
-      feeds.forEach(async (feed) => {
-        try {
-          const res = await getComments(feed.id);
-          if (res) {
-            const copy = comments;
-            copy[feed.id] = res;
-          }
-        } catch (err) {
-          console.error("댓글 로드 실패: " + err);
+      const res = await getFeed();
+      if (res.ok && res.response !== undefined) {
+        if (res.response === "NoFeeds") {
+          setNoFeeds(true);
+          console.warn("No more feeds.");
+        } else {
+          const feedsResponse = res.response.feeds;
+          setNoFeeds(false);
+          setFeeds((prev) => {
+            const newFeeds = [...prev, ...feedsResponse];
+            const newFeedsFiltered = getUniqueBy(newFeeds, "id");
+            return newFeedsFiltered;
+          });
         }
-      });
+      } else {
+        console.error("Failed to load feeds.");
+        navigate("/login");
+      }
+
+      // // 댓글 로드
+      // feeds.forEach(async (feed) => {
+      //   try {
+      //     const res = await getComments(feed.id);
+      //     if (res) {
+      //       const copy = comments ?? {};
+      //       copy[feed.id] = res;
+      //     }
+      //   } catch (err) {
+      //     console.error("댓글 로드 실패: " + err);
+      //   }
+      // });
     })();
   }, []);
+  useEffect(() => {
+    (async () => {
+      const prevComments = { ...comments };
+      for (const feed of feeds) {
+        if (!comments[feed.id]) {
+          const res = await getComments(feed.id);
+          if (res && res.comments) {
+            prevComments[feed.id] = res.comments;
+          }
+        }
+      }
+      setComments(prevComments);
+    })();
+  }, [feeds]);
   return (
     <SCnt>
       <SBody>
@@ -146,17 +174,23 @@ const FeedPage = () => {
           ) : (
             feeds.map((feed) => (
               <SFeed key={feed.id}>
-                <SFeedContents></SFeedContents>
+                <SFeedMediaContents></SFeedMediaContents>
                 <SFeedBody>
                   <SFeedHeader>
-                    <SFeedAuthor>{feed.username}</SFeedAuthor>
+                    <SFeedAuthor>@{feed.author.username}</SFeedAuthor>
+                    <SFeedContent>{feed.content}</SFeedContent>
                   </SFeedHeader>
                   <SFeedComments>
-                    {comments[feed.id].slice(0, 3).map((comment) => (
-                      <SFeedComment key={comment.id}>
-                        <strong>{comment.username}</strong>: {comment.content}
-                      </SFeedComment>
-                    ))}
+                    {comments[feed.id] !== undefined
+                      ? comments[feed.id].length !== 0
+                        ? comments[feed.id].slice(0, 3).map((comment) => (
+                            <SFeedComment key={comment.id}>
+                              <strong>{comment.username}</strong>:{" "}
+                              {comment.content}
+                            </SFeedComment>
+                          ))
+                        : "첫 번째 댓글을 달아보세요!"
+                      : null}
                   </SFeedComments>
                 </SFeedBody>
               </SFeed>

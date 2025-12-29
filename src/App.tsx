@@ -11,6 +11,8 @@ import Search from "./pages/Search";
 import Upload from "./pages/Upload";
 import FeedPage from "./pages/Feed";
 import FeedUpLoadPage from "./pages/FeedUpLoad";
+import { useMyProfileStore } from "./stores/useMyProfileStore";
+import { useEffect } from "react";
 
 const StyledDesktopErrorCnt = styled.div`
   display: flex;
@@ -21,6 +23,10 @@ const StyledDesktopErrorCnt = styled.div`
 
 function App() {
   const isMobile = useIsMobile();
+  const refreshMyProfile = useMyProfileStore((state) => state.refresh);
+  useEffect(() => {
+    refreshMyProfile();
+  }, []);
   return isMobile ? (
     <BrowserRouter>
       <Routes>
