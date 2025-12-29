@@ -4,6 +4,7 @@ import { LogOut } from "../services/Auth/LogOut";
 import { setCookie } from "../utils/setCookie";
 import { getCookie } from "../utils/getCookie";
 import { jwtRefresh } from "../services/Auth/jwtRefresh";
+import { v4 as uuidv4 } from 'uuid';
 
 interface AuthState {
   isLogIn: boolean;
@@ -23,7 +24,7 @@ const getOrSetDeviceId = () => {
 
   let id = localStorage.getItem(DEVICE_ID_KEY);
   if (!id) {
-    id = crypto.randomUUID();
+    id = uuidv4();
     localStorage.setItem(DEVICE_ID_KEY, id);
   }
   return id;
