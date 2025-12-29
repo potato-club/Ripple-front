@@ -10,6 +10,7 @@ import FindIDPW from "./pages/FindIDPW";
 import Search from "./pages/Search";
 import Upload from "./pages/Upload";
 import FeedPage from "./pages/Feed";
+import FeedUpLoadPage from "./pages/FeedUpLoad";
 
 const StyledDesktopErrorCnt = styled.div`
   display: flex;
@@ -32,6 +33,7 @@ function App() {
         <Route path="/signup" element={<SignUp/>} />
         <Route path="/settings" element={<Settings/>} />
         <Route path="/findIDPW" element={<FindIDPW/>} />
+        <Route path="/feedupload" element={<FeedUpLoadPage/>} />
       </Routes>
     </BrowserRouter>
   ) : (
