@@ -1,9 +1,11 @@
-import { AxiosError } from "axios";
-import { axiosInstance } from "../axiosClient";
+import axios, { AxiosError } from "axios";
 
-export const uploadProfileImage = async (uploadUrl: string, file: File) => {
+export const uploadProfileImage = async (uploadUrl: string, objectKey: string) => {
   try {
-    const res = await axiosInstance.put(uploadUrl, file);
+    const res = await axios.put(uploadUrl, {
+      updateProfile: objectKey,
+      action: "SET"
+    });
     if (res && res.data) return res.data;
     else return false;
   } catch (e) {

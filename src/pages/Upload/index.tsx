@@ -1,77 +1,79 @@
 import styled from "styled-components";
-import { useEffect } from "react";
 import Navbar from "../../components/Navbar";
-import uploadIcon from "../../assets/icons/feed.svg";
+import uploadimg from "../../assets/icons/upload.svg";
 
-const StyledCnt = styled.div`
-  height: 100%;
-  aspect-ratio: 9 / 19;
-  margin: auto;
-
+const Cnt = styled.div`
   display: flex;
   flex-direction: column;
-
-  @media (max-width: 768px) {
-    aspect-ratio: unset;
-  }
+  background-color: #222;
+  height: 100vh;
+  width: 100%;
 `;
+
 const StyledHeader = styled.div`
   flex-shrink: 0;
-  height: 85px;
-  background-color: #222;
+  height: 80px;
   color: white;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 22px 27px;
+  padding: 24px;
 `;
-const StyledUsername = styled.div`
+
+const StyledUploadImg = styled.img`
+  height: 32px;
+  width: 32px;
+  cursor: pointer;
+`;
+
+const StyledHeaderTtitle = styled.div`
   font-size: 32px;
-  line-height: 39px;
-  display: flex;
-  align-items: center;
-  justify-content: left;
-  gap: 10px;
-  & > img {
-    width: 42px;
-  }
+  margin-left: 20px;
 `;
-const StyledContent = styled.div`
+
+const StyledBody = styled.div`
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  background-color: #ffffff;
 `;
-const StyledNavbarWrapper = styled.div`
-  flex-shrink: 0;
-  height: 85px;
-  position: relative;
-  background: #f4f4f4;
+
+const StyledUploadBtn = styled.button`
+  position: fixed;
+  right: 16px;
+  bottom: calc(80px + 16px);
+
+  width: 64px;
+  height: 64px;
+
+  background-color: #1FA6F4;
+  border-radius: 64px;
 `;
+
 const Upload = () => {
-  // 탭 이름 변경
-  useEffect(() => {
-    document.title = "Ripple | 업로드";
-  }, []);
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  console.log(file);
+  console.log(file.type); // image/png, video/mp4
+};
 
   return (
-    <StyledCnt>
+    <Cnt>
       <StyledHeader>
-        <StyledUsername>
-          <img src={uploadIcon} />
-          <span>새 피드 게시하기</span>
-        </StyledUsername>
+        <StyledUploadImg src={uploadimg} />
+        <StyledHeaderTtitle>업로드</StyledHeaderTtitle>
       </StyledHeader>
-
-      <StyledContent>
-        Upload
-      </StyledContent>
-
-      <StyledNavbarWrapper>
-        <Navbar />
-      </StyledNavbarWrapper>
-    </StyledCnt>
-  );
-};
+      <StyledBody>
+        aaaa
+      </StyledBody>
+      <StyledUploadBtn>
+        <input type="file" id="file-input" onChange={handleFile} style={{ display: "none" }} />
+        <label htmlFor="file-input">
+          <StyledUploadImg src={uploadimg} />
+        </label>
+      </StyledUploadBtn>
+      <Navbar />
+    </Cnt>
+  )
+}
 
 export default Upload;

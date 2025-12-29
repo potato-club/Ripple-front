@@ -205,7 +205,8 @@ const Profile = () => {
     const res = await PresignProfileImage(mimeType, sizeBytes);
     if (!res) return false;
     const uploadUrl = res.uploadUrl;
-    const data = await uploadProfileImage(uploadUrl, file);
+    const objectKey = res.objectKey;
+    const data = await uploadProfileImage(uploadUrl, objectKey);
     console.log(data);
   }
   function handleClickUpdateProfileImageModalInput() {
