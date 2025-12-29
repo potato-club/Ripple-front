@@ -56,22 +56,45 @@ const StyledUploadBtn = styled.button`
   border-radius: 64px;
 `;
 
+const StyledUploadImgPreviewWrp = styled.div`
+  display: flex;
+  justify-content: center;
+  overflow-x: scroll;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
 const StyledUploadImgPreview = styled.img`
   aspect-ratio: 1/1;
-  width: 100%;
+  flex-shrink: 0;
+  width: 70%;
+`;
+
+const StyledToggle = styled.label`
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+`;
+
+const StyledCheckbox = styled.input`
+  width: 16px;
+  height: 16px;
 `;
 
 const Upload = () => {
   const [previews, setPreviews] = useState<string[]>([]);
+  const [isMultiple, setIsMultiple] = useState(true);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const files = e.target.files;
-  if (!files) return;
+    const files = e.target.files;
+    if (!files) return;
 
-  const imageUrls = Array.from(files).map((file) => 
-    URL.createObjectURL(file)
-  );
-  setPreviews(imageUrls);
+    const selectedFiles = isMultiple ? Array.from(files) : (files[0] ? [files[0]] : []);
+
+    const imageUrls = selectedFiles.map((file) => URL.createObjectURL(file));
+    setPreviews(imageUrls);
   };
 
   // 메모리 누수 방지
@@ -86,18 +109,34 @@ const Upload = () => {
       <StyledHeader>
         <StyledUploadIcon src={uploadIcon} />
         <StyledHeaderTtitle>업로드</StyledHeaderTtitle>
+        <StyledToggle>
+          <StyledCheckbox
+            type="checkbox"
+            checked={isMultiple}
+            onChange={(e) => setIsMultiple(e.target.checked)}
+          />
+          다중 선택
+        </StyledToggle>
       </StyledHeader>
       <StyledBody>
-        {previews.map((src, index) => (
-          <StyledUploadImgPreview
-            key={index}
-            src={src}
-            alt={`preview-${index}`}
-          />
-        ))}
+        <StyledUploadImgPreviewWrp style={{ justifyContent: isMultiple ? "flex-start" : "center" }}>
+          {previews.map((src, index) => (
+            <StyledUploadImgPreview
+              key={index}
+              src={src}
+              alt={`preview-${index}`}
+            />
+          ))}
+        </StyledUploadImgPreviewWrp>
       </StyledBody>
       <StyledUploadBtn>
-        <input type="file" multiple id="file-input" onChange={handleFile} style={{ display: "none" }} />
+        <input
+          type="file"
+          multiple={isMultiple}
+          id="file-input"
+          onChange={handleFile}
+          style={{ display: "none" }}
+        />
         <label htmlFor="file-input">
           <StyledUploadIcon src={uploadIcon} />
         </label>
