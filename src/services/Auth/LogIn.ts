@@ -1,5 +1,5 @@
 import { isAxiosError } from "axios";
-import { axiosInstance } from "../axiosClient";
+import axios from "axios";
 
 export interface LogInResponse {
   accessToken: string;
@@ -7,8 +7,8 @@ export interface LogInResponse {
 
 export const LogIn = async (username: string, password: string, deviceId: string) => {
   try {
-    const res = await axiosInstance.post<LogInResponse>(
-    `/api/auth/login`,
+    const res = await axios.post<LogInResponse>(
+    `${import.meta.env.VITE_API_URL}/api/auth/login`,
     {
       username: username.trim(),
       password: password.trim(),
