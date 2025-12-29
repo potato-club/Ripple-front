@@ -8,10 +8,8 @@ import type { Comment } from "../../types/Comment";
 import { getComments } from "../../services/getComments";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useNavigate } from "react-router";
-import { getCookie } from "../../utils/getCookie";
 import { getUniqueBy } from "../../utils/getUniqueBy";
-import { axiosInstance } from "../../services/axiosClient";
-import { getFeed } from "../../services/feeds/getFeed";
+import { getFeed } from "../../services/feeds/GetFeed";
 
 const SCnt = styled.div`
   background-color: #222;
@@ -25,7 +23,10 @@ const SBody = styled.div`
 `;
 const SHeader = styled.div`
   background-color: #222;
+  position: fixed;
+  top: 0;
   height: 70px;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -37,10 +38,14 @@ const SRippleIcon = styled.img.attrs({ src: rippleIcon })`
 const SDirectMessage = styled.img.attrs({ src: directMessageIcon })`
   height: 70%;
 `;
-const SFeedsWrp = styled.div``;
+const SFeedsWrp = styled.div`
+  margin-bottom: 0px;
+  margin-top: 70px;
+`;
 const SFeed = styled.div`
   background-color: #333;
   width: 100%;
+  height: calc(100vh - 150px);
   aspect-ratio: 2/3;
   border: 1px solid #555;
 `;
@@ -68,6 +73,7 @@ const SFeedMediaContentVideo = styled.video`
   height: 100%;
 `;
 const SFeedBody = styled.div`
+  height: 100%;
   background-color: #222;
   color: #eee;
   overflow: hidden;

@@ -17,6 +17,7 @@ const StyledCnt = styled.div`
   position: absolute;
   bottom: 0;
   width: 100%;
+  flex-shrink: 0;
 `;
 const StyledShortcut = styled.img`
   height: 60px;
