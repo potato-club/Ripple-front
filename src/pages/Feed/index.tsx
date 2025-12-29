@@ -39,7 +39,7 @@ const SDirectMessage = styled.img.attrs({ src: directMessageIcon })`
   height: 70%;
 `;
 const SFeedsWrp = styled.div`
-  margin-bottom: 0px;
+  margin-bottom: 80px;
   margin-top: 70px;
 `;
 const SFeed = styled.div`

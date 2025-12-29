@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import Navbar from "../../components/Navbar";
-import uploadimg from "../../assets/icons/upload.svg";
+import uploadIcon from "../../assets/icons/upload.svg";
+import { useEffect, useState } from "react";
 
 const Cnt = styled.div`
   display: flex;
@@ -12,14 +13,18 @@ const Cnt = styled.div`
 
 const StyledHeader = styled.div`
   flex-shrink: 0;
-  height: 80px;
   color: white;
+  background-color: #222;
   display: flex;
+  position: fixed;
+  top: 0;
+  height: 70px;
+  width: 100%;
   align-items: center;
-  padding: 24px;
+  padding: 8px 16px;
 `;
 
-const StyledUploadImg = styled.img`
+const StyledUploadIcon = styled.img`
   height: 32px;
   width: 32px;
   cursor: pointer;
@@ -33,6 +38,10 @@ const StyledHeaderTtitle = styled.div`
 const StyledBody = styled.div`
   flex: 1;
   background-color: #ffffff;
+  aspect-ratio: 2/3;
+  height: calc(100vh - 150px);
+  margin-bottom: 80px;
+  margin-top: 70px;
 `;
 
 const StyledUploadBtn = styled.button`
@@ -47,28 +56,50 @@ const StyledUploadBtn = styled.button`
   border-radius: 64px;
 `;
 
-const Upload = () => {
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+const StyledUploadImgPreview = styled.img`
+  aspect-ratio: 1/1;
+  width: 100%;
+`;
 
-  console.log(file);
-  console.log(file.type); // image/png, video/mp4
-};
+const Upload = () => {
+  const [previews, setPreviews] = useState<string[]>([]);
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const files = e.target.files;
+  if (!files) return;
+
+  const imageUrls = Array.from(files).map((file) => 
+    URL.createObjectURL(file)
+  );
+  setPreviews(imageUrls);
+  };
+
+  // 메모리 누수 방지
+  useEffect(() => {
+    return () => {
+      if (previews) previews.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [previews]);
 
   return (
     <Cnt>
       <StyledHeader>
-        <StyledUploadImg src={uploadimg} />
+        <StyledUploadIcon src={uploadIcon} />
         <StyledHeaderTtitle>업로드</StyledHeaderTtitle>
       </StyledHeader>
       <StyledBody>
-        aaaa
+        {previews.map((src, index) => (
+          <StyledUploadImgPreview
+            key={index}
+            src={src}
+            alt={`preview-${index}`}
+          />
+        ))}
       </StyledBody>
       <StyledUploadBtn>
-        <input type="file" id="file-input" onChange={handleFile} style={{ display: "none" }} />
+        <input type="file" multiple id="file-input" onChange={handleFile} style={{ display: "none" }} />
         <label htmlFor="file-input">
-          <StyledUploadImg src={uploadimg} />
+          <StyledUploadIcon src={uploadIcon} />
         </label>
       </StyledUploadBtn>
       <Navbar />

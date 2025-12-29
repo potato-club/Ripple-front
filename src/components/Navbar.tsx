@@ -14,7 +14,7 @@ const StyledCnt = styled.div`
   display: flex;
   justify-content: space-around;
   align-items: center;
-  position: absolute;
+  position: fixed;
   bottom: 0;
   width: 100%;
   flex-shrink: 0;
