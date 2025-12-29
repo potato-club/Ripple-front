@@ -2,7 +2,6 @@ import styled from "styled-components";
 import Navbar from "../../components/Navbar";
 import { useEffect, useState } from "react";
 import type { Feed } from "../../types/Feed";
-import { getFeed } from "../../services/getFeed";
 import rippleIcon from "../../assets/ripple-icon.png";
 import directMessageIcon from "../../assets/icons/dm.svg";
 import type { Comment } from "../../types/Comment";
@@ -12,6 +11,7 @@ import { useNavigate } from "react-router";
 import { getCookie } from "../../utils/getCookie";
 import { getUniqueBy } from "../../utils/getUniqueBy";
 import { axiosInstance } from "../../services/axiosClient";
+import { getFeed } from "../../services/feeds/getFeed";
 
 const SCnt = styled.div`
   background-color: #222;
@@ -130,6 +130,7 @@ const FeedPage = () => {
         }
       } else {
         console.error("Failed to load feeds.");
+        navigate("/login");
       }
 
       // // 댓글 로드
