@@ -28,6 +28,8 @@ export const getMyProfile = async () => {
   } catch (error) {
     if (isAxiosError(error)) {
       console.log(error.response?.data);
+    } else {
+      console.log(error)
     }
   }
   return false;

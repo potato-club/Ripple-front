@@ -34,7 +34,7 @@ const Navbar = () => {
   const myProfile = useMyProfileStore((state) => state.data);
   const refreshMyProfile = useMyProfileStore((state) => state.refresh);
   function navigateToProfilePage() {
-    if (myProfile) navigator(myProfile.username);
+    if (myProfile) navigator("/"+myProfile.username);
     refreshMyProfile();
   }
   return (

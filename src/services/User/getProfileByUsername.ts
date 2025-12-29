@@ -21,7 +21,9 @@ export const getProfileByUsername = async (username: string) => {
     if (res && ProfileByUsernameSchema.safeParse(res.data)) return res.data;
   } catch (error) {
     if (isAxiosError(error)) {
-      console.log(error.response?.data);
+      console.log(error);
+    } else {
+      console.log(error)
     }
   }
   return false;

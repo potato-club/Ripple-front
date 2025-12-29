@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useParams, useNavigate } from "react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import settingsImg from "../../assets/icons/settings.svg";
 import Navbar from "../../components/Navbar";
 import { HideScrollbar } from "../../styles/HideScrollbar";
@@ -9,6 +9,8 @@ import { ReplyItem } from "./ReplyItem";
 import { getProfileByUsername } from "../../services/User/getProfileByUsername";
 import type { Comment } from "../../types/Comment";
 import noProfileImageSrc from "../../assets/icons/account.svg";
+import { PresignProfileImage } from "../../services/User/PresignProfileImage";
+import { uploadProfileImage } from "../../services/User/uploadProfileImage";
 
 const StyledCnt = styled.div`
   height: 100%;
@@ -116,6 +118,38 @@ const StyledUserNotFound = styled.div`
   text-align: center;
   padding-top: 64px;
 `;
+const SUpdateProfileImageModal = styled.div`
+  background: #000000a0;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+`;
+const SUpdateProfileImageModalIn = styled.div`
+  background-color: var(--color-bg);
+  width: 80%;
+  height: 500px;
+  border-radius: 4px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -55%);
+`;
+const SUpdateProfileImageModalTitle = styled.h1`
+  color: #eee;
+  font-size: 24px;
+`;
+const SUpdateProfileImageModalInputDisplay = styled.div``;
+const SUpdateProfileImageModalInput = styled.input.attrs({ type: "file" })`
+  display: none;
+`;
+const SUpdateProfileImageModalInputSubmitButton = styled.button`
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 8px;
+  color: black;
+`;
 
 const Profile = () => {
   const [userNotFound, setUserNotFound] = useState(false);
@@ -158,12 +192,64 @@ const Profile = () => {
     }
   }, [username]);
 
+  // 프로필이미지 바꾸기
+  async function updateProfileImage() {
+    const input = updateProfileImageModalInputRef.current;
+    if (!input) return false;
+    const files = input.files;
+    if (!files) return false;
+    const file = files.item(0);
+    if (!file) return false;
+    const sizeBytes = file.size;
+    const mimeType = file.type;
+    const res = await PresignProfileImage(mimeType, sizeBytes);
+    if (!res) return false;
+    const uploadUrl = res.uploadUrl;
+    const data = await uploadProfileImage(uploadUrl, file);
+    console.log(data);
+  }
+  function handleClickUpdateProfileImageModalInput() {
+    const input = updateProfileImageModalInputRef.current;
+    if (!input) return false;
+    input.click();
+  }
+  function handleChangeUpdateProfileInputModalInput(
+    e: React.ChangeEvent<HTMLInputElement>
+  ) {}
+
+  const [showUpdateProfileImageModal, setShowUpdateProfileImageModal] =
+    useState(false);
+  const updateProfileImageModalInputRef = useRef<HTMLInputElement>(null);
+
   return (
     <StyledCnt>
       {userNotFound ? (
         <StyledUserNotFound>사용자를 찾을 수 없습니다</StyledUserNotFound>
       ) : (
         <>
+          {showUpdateProfileImageModal && (
+            <SUpdateProfileImageModal>
+              <SUpdateProfileImageModalIn>
+                <SUpdateProfileImageModalTitle
+                  onClick={handleClickUpdateProfileImageModalInput}
+                >
+                  프로필 이미지 업데이트
+                </SUpdateProfileImageModalTitle>
+                <SUpdateProfileImageModalInputDisplay>
+                  이미지를 선택하세요
+                </SUpdateProfileImageModalInputDisplay>
+                <SUpdateProfileImageModalInputSubmitButton
+                  onClick={updateProfileImage}
+                >
+                  업로드
+                </SUpdateProfileImageModalInputSubmitButton>
+                <SUpdateProfileImageModalInput
+                  ref={updateProfileImageModalInputRef}
+                  onChange={handleChangeUpdateProfileInputModalInput}
+                />
+              </SUpdateProfileImageModalIn>
+            </SUpdateProfileImageModal>
+          )}
           <StyledHeader>
             <StyledUsername>{username}</StyledUsername>
             <StyledSettingBtn onClick={() => navigator("/settings")} />
@@ -171,7 +257,10 @@ const Profile = () => {
 
           <StyledContent>
             <StyledProfileSection>
-              <StyledProfileImage $img={profileImgSrc ?? noProfileImageSrc} />
+              <StyledProfileImage
+                onClick={() => setShowUpdateProfileImageModal(true)}
+                $img={profileImgSrc ?? noProfileImageSrc}
+              />
               <StyledProfileInfoItem>
                 게시
                 <br />
