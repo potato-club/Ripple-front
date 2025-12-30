@@ -4,23 +4,20 @@ import { AxiosError } from "axios";
 
 const FeedSchema = z.object({
   id: z.number(),
-  thumbnail: z.string().nullable(),
   author: z.object({
     id: z.number(),
     username: z.string(),
     profileImageUrl: z.string().nullable(),
   }),
   content: z.string().nullable(),
-  mediaUrls: z.array(z.string()),
   tags: z.array(z.string()),
   likeCount: z.number(),
   bookmarkCount: z.number(),
   commentCount: z.number(),
   createdAt: z.string(),
-  updatedAt: z.string(),
   viewCount: z.number(),
-  visibility: z.enum(["PUBLIC"]),
-  feedStatus: z.enum(["PUBLISHED"]),
+  visibility: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"]),
+  feedStatus: z.enum(["PUBLISHED", "DELETED"]),
 });
 
 const ResponseSchema = z.object({
