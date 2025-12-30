@@ -11,6 +11,7 @@ import type { Comment } from "../../types/Comment";
 import noProfileImageSrc from "../../assets/icons/account.svg";
 import { PresignProfileImage } from "../../services/User/PresignProfileImage";
 import { uploadProfileImage } from "../../services/User/uploadProfileImage";
+import { PatchProfile } from "../../services/User/PatchProfile";
 
 const StyledCnt = styled.div`
   height: 100%;
@@ -173,6 +174,24 @@ const Profile = () => {
     return userProfile;
   }
 
+  const getImageSize = (file: File): Promise<{ width: number; height: number }> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      resolve({
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+      });
+      URL.revokeObjectURL(url); // 메모리 해제
+    };
+
+    img.onerror = reject;
+    img.src = url;
+  });
+};
+
   useEffect(() => {
     if (username) {
       (async () => {
@@ -202,12 +221,29 @@ const Profile = () => {
     if (!file) return false;
     const sizeBytes = file.size;
     const mimeType = file.type;
+    console.log(sizeBytes, mimeType);
     const res = await PresignProfileImage(mimeType, sizeBytes);
     if (!res) return false;
     const uploadUrl = res.uploadUrl;
     const objectKey = res.objectKey;
-    const data = await uploadProfileImage(uploadUrl, objectKey);
-    console.log(data);
+    const uploadRes = await uploadProfileImage(uploadUrl, file, mimeType);
+    if (!uploadRes) console.log("프로필 이미지 업로드 실패");
+
+    const { width, height } = await getImageSize(file);
+
+    const data = await PatchProfile({
+      username: username ?? "",
+      profileImage: {
+        action: "SET",
+        objectKey: objectKey,
+        mimeType: mimeType,
+        width: width,
+        height: height,
+        sizeBytes: sizeBytes
+      }
+    });
+
+
   }
   function handleClickUpdateProfileImageModalInput() {
     const input = updateProfileImageModalInputRef.current;
