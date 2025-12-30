@@ -39,9 +39,13 @@ function isValidResponse(obj: any): obj is FeedResponse {
   return false;
 }
 
-export const getFeed = async (): Promise<{
+export const getFeed = async (
+  cursor: number | null = null,
+  limit: number = 10
+): Promise<{
   ok: boolean;
   response?: FeedResponse | "NoFeeds";
+  error?: AxiosError;
 }> => {
   const attempt = async (
     attemptCount = 0
@@ -52,7 +56,7 @@ export const getFeed = async (): Promise<{
   }> => {
     try {
       const res = await axiosInstance.get("/api/feeds/home", {
-        params: { cursor: null, limit: 10 },
+        params: { cursor, limit },
       });
 
       // !!! ------- 임시 오타 교정 ------- !!! //

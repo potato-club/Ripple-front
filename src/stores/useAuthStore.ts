@@ -3,8 +3,7 @@ import { LogIn } from "../services/Auth/LogIn";
 import { LogOut } from "../services/Auth/LogOut";
 import { setCookie } from "../utils/setCookie";
 import { getCookie } from "../utils/getCookie";
-import { jwtRefresh } from "../services/Auth/jwtRefresh";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 interface AuthState {
   isLogIn: boolean;
@@ -16,7 +15,6 @@ interface AuthState {
   logOut: () => void;
   logOutAll: () => void;
   checkIsLoggedIn: () => boolean;
-  jwtRefresh: () => Promise<void>;
 }
 
 const getOrSetDeviceId = () => {
@@ -89,11 +87,4 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return false;
     }
   },
-  jwtRefresh: async () => {
-    if (await jwtRefresh()) {
-      console.log("[JWT] Refresh Complete!")
-    } else {
-      console.error("[JWT] Refresh Failed.]")
-    }
-  }
 }));
