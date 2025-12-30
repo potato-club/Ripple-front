@@ -29,11 +29,13 @@ export const PatchProfile = async (request: profileImageRequest) => {
     const res = await axiosInstance.patch<patchProfileResponse>(`/api/users/me/profile`, {
       request
     });
-    console.log(res.data, "patch profile response");
-    return res.data;
+    console.log("patch profile response", res.data);
+    if (res) return res.data;
   } catch (error) {
     if(isAxiosError(error)) {
+      console.log("status:", error.response?.status);
       console.log(error.response?.data);
     }
+    return false;
   }
 };

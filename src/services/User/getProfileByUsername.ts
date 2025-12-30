@@ -5,7 +5,7 @@ import z from "zod";
 const ProfileByUsernameSchema = z.object({
   id: z.number(),
   username: z.string(),
-  profileImageUrl: z.string(),
+  profileImageUrl: z.string().nullable(),
   postCount: z.number(),
   followerCount: z.number(),
   followingCount: z.number(),
@@ -18,7 +18,7 @@ export const getProfileByUsername = async (username: string) => {
     const res = await axiosInstance.get<ProfileByUsernameResponse>(
       `/api/users/by-username/${username}`
     );
-    if (res && ProfileByUsernameSchema.safeParse(res.data)) return res.data;
+    if (res && ProfileByUsernameSchema.safeParse(res.data).success) return res.data;
   } catch (error) {
     if (isAxiosError(error)) {
       console.log(error);

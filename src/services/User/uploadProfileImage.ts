@@ -5,13 +5,14 @@ export const uploadProfileImage = async (uploadUrl: string, file: File, fileType
     const res = await axios.put(uploadUrl, file, {
       headers: {"Content-Type": fileType}
     });
-    if (res.status === 200) return true;   
-    else return false;
+    if (res.status !== 200) return false;
+    return true;
   } catch (e) {
     if (e instanceof AxiosError) {
       console.error("[Axios]", e.message);
     } else {
       console.error(e);
     }
+    return false;
   }
 };

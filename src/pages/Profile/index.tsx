@@ -153,10 +153,12 @@ const SUpdateProfileImageModalInputSubmitButton = styled.button`
 `;
 
 const Profile = () => {
-  const [userNotFound, setUserNotFound] = useState(false);
   const navigator = useNavigate();
+
+  const [userNotFound, setUserNotFound] = useState(false);
+  
   const { username } = useParams<{ username: string }>();
-  const [profileImgSrc, setProfileImgSrc] = useState<string>();
+  const [profileImgSrc, setProfileImgSrc] = useState<string | null>();
   const [comments] = useState<Comment[]>([]);
   const [feeds] = useState([1, 2, 3, 4, 5, 6, 7, 8]);
 
@@ -222,12 +224,22 @@ const Profile = () => {
     const sizeBytes = file.size;
     const mimeType = file.type;
     console.log(sizeBytes, mimeType);
+
     const res = await PresignProfileImage(mimeType, sizeBytes);
-    if (!res) return false;
+    if (!res) {
+      console.log("Presign URL 가져오기 실패");
+      setShowUpdateProfileImageModal(false);
+      return false;
+    }
     const uploadUrl = res.uploadUrl;
     const objectKey = res.objectKey;
+
     const uploadRes = await uploadProfileImage(uploadUrl, file, mimeType);
-    if (!uploadRes) console.log("프로필 이미지 업로드 실패");
+    if (!uploadRes) {
+      console.log("프로필 이미지 업로드 실패");
+      setShowUpdateProfileImageModal(false);
+      return false;
+    }
 
     const { width, height } = await getImageSize(file);
 
@@ -242,8 +254,13 @@ const Profile = () => {
         sizeBytes: sizeBytes
       }
     });
-
-
+    if (!data) {
+      console.log("프로필 이미지 변경 실패");
+      setShowUpdateProfileImageModal(false);
+      return false;
+    }
+    setProfileImgSrc(data.profileImageUrl);
+    setShowUpdateProfileImageModal(false);
   }
   function handleClickUpdateProfileImageModalInput() {
     const input = updateProfileImageModalInputRef.current;
