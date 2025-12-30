@@ -14,6 +14,7 @@ export const LogIn = async (username: string, password: string, deviceId: string
       password: password.trim(),
       deviceId: deviceId.trim(),
     },
+    { withCredentials: true }
   );
     return res;
   } catch (error) {
