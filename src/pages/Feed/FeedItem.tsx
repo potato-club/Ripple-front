@@ -7,12 +7,13 @@ import * as S from "./FeedItems.styles";
 export const FeedItem = ({ feed }: { feed: Feed }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasLoaded, setHasLoaded] = useState(false);
+  // const [hasLoaded, setHasLoaded] = useState(false);
+  const hasLoadedRef = useRef(false);
   const observerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const observer = new IntersectionObserver(
       async ([entry]) => {
-        if (entry.isIntersecting && !hasLoaded) {
+        if (entry.isIntersecting && !hasLoadedRef.current) {
           loadComments();
         }
       },
@@ -32,7 +33,8 @@ export const FeedItem = ({ feed }: { feed: Feed }) => {
       const res = await getComments(feed.id);
       if (res && res.comments) {
         setComments(res.comments);
-        setHasLoaded(true);
+        // setHasLoaded(true);
+        hasLoadedRef.current = true;
       }
     } catch (err) {
       console.error("Failed to load comments", err);
