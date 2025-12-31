@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import Navbar from "../../components/Navbar";
 import uploadIcon from "../../assets/icons/upload.svg";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { refreshToken } from "../../services/Auth/refreshToken";
 
 const Cnt = styled.div`
@@ -113,6 +113,7 @@ const StyledTagListWrp = styled.div`
   display: flex;
   justify-content: center;
   margin-bottom: 16px;
+  min-height: 30px;
 `;
 
 const StyledTagList = styled.div`
@@ -120,12 +121,14 @@ const StyledTagList = styled.div`
   display: flex;
   justify-content: flex-start;
   gap: 8px;
+  overflow: hidden;
 `;
 
 const StyledTagListItem = styled.div`
   font-size: 14px;
   padding: 4px 8px;
   border-radius: 16px;
+  flex-shrink: 0;
 
   background-color: #C7EDFF;
 `;
@@ -184,12 +187,30 @@ const StyledNotSelectedFeedPage = styled.div`
   align-items: center;
 `;
 
+const HiddenMoreTag = styled.div`
+  position: absolute;
+  visibility: hidden;
+  white-space: nowrap;
+  padding: 4px 8px;
+  font-size: 14px;
+  border-radius: 16px;
+  font-weight: bold;
+`;
+
 const Upload = () => {
   const [previews, setPreviews] = useState<string[]>([]); // 미리보기 이미지 URL 배열
   const [isMultiple, setIsMultiple] = useState(false); // 다중 선택 여부
   const [isSingleCss, setIsSingleCss] = useState(true); // 다중에서 단일 선택일 경우 CSS 조정
-
   const fileInputRef = useRef<HTMLInputElement>(null); // 파일 입력 참조
+
+  const [tagList, setTagList] = useState<string[]>([]); // 태그 리스트
+  const [tagInput, setTagInput] = useState(""); // 태그 입력 값
+  const tagListRef = useRef<HTMLDivElement>(null); // 태그 리스트 참조
+  const [visibleCount, setVisibleCount] = useState<number | null>(null); // 보여지는 태그 개수
+  const moreTagRef = useRef<HTMLDivElement>(null); // 숨겨진 더보기 태그 참조
+
+  const [content, setContent] = useState(""); // 게시물 내용
+
 
   /** 다중 선택 여부 또는 미리보기 이미지 변경 시 CSS 조정 */
   useEffect(() => {
@@ -230,6 +251,59 @@ const Upload = () => {
     }
   };
 
+  /** 태그 입력 핸들러 */
+  const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTagInput(e.target.value);
+  };
+
+  /** 태그 추가 핸들러 (Enter 키) */
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && tagInput.trim() !== "") {
+      e.preventDefault();
+      const newTag = tagInput.trim().replace(/^#/, ""); // # 제거
+      if (!tagList.includes(newTag)) {
+        setTagList([...tagList, newTag]);
+      }
+      setTagInput(""); // 입력 필드 초기화
+    }
+  };
+
+  /** 태그 추가 핸들러 (포커스 아웃) */
+  const handleTagInputBlur = () => {
+    if (tagInput.trim() !== "") {
+      const newTag = tagInput.trim().replace(/^#/, ""); // # 제거
+      if (!tagList.includes(newTag)) {
+        setTagList([...tagList, newTag]);
+      }
+      setTagInput(""); // 입력 필드 초기화
+    }
+  };
+
+  /** 태그 리스트 오버플로우 감지 */
+  useLayoutEffect(() => {
+    if (!tagListRef.current || !moreTagRef.current) return;
+
+    const container = tagListRef.current;
+    const items = Array.from(container.children)
+      .filter(el => el instanceof HTMLElement) as HTMLElement[];
+
+    const maxX =
+      container.clientWidth - moreTagRef.current.offsetWidth;
+
+    let count = 0;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+
+      const rightEdge = item.offsetLeft + item.offsetWidth;
+
+      if (rightEdge > maxX) break;
+      count++;
+    }
+
+    setVisibleCount(count);
+  }, [tagList]);
+
   return (
     <Cnt>
       <StyledHeader>
@@ -259,22 +333,45 @@ const Upload = () => {
           <StyledContentInput 
           type="text" 
           placeholder="설명을 입력하세요." 
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
         >
         </StyledContentInput>
         </StyledInputWrp>
         
         <StyledTagListWrp>
-          <StyledTagList>
-            {Array.from({ length: 5 }).map((_, index) => (
-              <StyledTagListItem key={index}>#태그{index + 1}</StyledTagListItem>
-            ))}
+          <StyledTagList
+            ref={tagListRef}
+          >
+            {tagList
+              .slice(0, visibleCount ?? tagList.length)
+              .map((tag, index) => (
+                <StyledTagListItem key={index}>#{tag}</StyledTagListItem>
+              ))
+            }
+            {visibleCount !== null && visibleCount < tagList.length && (
+              <StyledTagListItem style={{
+                fontWeight: "bold"
+              }}>
+                +{tagList.length - visibleCount}
+              </StyledTagListItem>
+            )}
           </StyledTagList>
+
+          {/* ✅ width 측정 전용 (절대 보이면 안 됨) */}
+          <HiddenMoreTag ref={moreTagRef}>
+            +99
+          </HiddenMoreTag>
         </StyledTagListWrp>
         
         <StyledTagInputWrp>
           <StyledTagInput 
-            type="text" 
-            placeholder="#day"
+            type="text"
+            placeholder="#태그 추가"
+            value={tagInput}
+            onChange={handleTagInputChange}
+            onKeyDown={handleTagInputKeyDown}
+            onBlur={handleTagInputBlur}
           >
           </StyledTagInput>
         </StyledTagInputWrp>
