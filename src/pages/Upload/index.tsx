@@ -2,7 +2,12 @@ import styled from "styled-components";
 import Navbar from "../../components/Navbar";
 import uploadIcon from "../../assets/icons/upload.svg";
 import { useEffect, useRef, useState } from "react";
-import { refreshToken } from "../../services/Auth/refreshToken";
+import { useOverflowTagList } from "../../hooks/useOverflowTagList";
+import { feedImagesPresign } from "../../services/feeds/feedImagesPresign";
+import getImageSize from "../../utils/getImageSize";
+import { feedImagesUpload } from "../../services/feeds/feedImagesUpload";
+import { PostFeed } from "../../services/feeds/PostFeed";
+import { useNavigate } from "react-router";
 
 const Cnt = styled.div`
   display: flex;
@@ -113,6 +118,7 @@ const StyledTagListWrp = styled.div`
   display: flex;
   justify-content: center;
   margin-bottom: 16px;
+  min-height: 30px;
 `;
 
 const StyledTagList = styled.div`
@@ -120,12 +126,14 @@ const StyledTagList = styled.div`
   display: flex;
   justify-content: flex-start;
   gap: 8px;
+  overflow: hidden;
 `;
 
 const StyledTagListItem = styled.div`
   font-size: 14px;
   padding: 4px 8px;
   border-radius: 16px;
+  flex-shrink: 0;
 
   background-color: #C7EDFF;
 `;
@@ -178,18 +186,63 @@ const StyledVisibilitySelectBtn = styled.button`
   border-radius: 8px;
 `;
 
-const StyledNotSelectedFeedPage = styled.div`
+const StyledNotSelectedFeedWrp = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: #f0f0f0;
+`;
+
+const StyledNotSelectedFeed = styled.div`
+  font-size: 16px;
+`;
+
+const HiddenMoreTag = styled.div`
+  position: absolute;
+  visibility: hidden;
+  white-space: nowrap;
+  padding: 4px 8px;
+  font-size: 14px;
+  border-radius: 16px;
+  font-weight: bold;
+`;
+
+const StyledNoneTagWrp = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+  min-height: 30px;
+`;
+
+const StyledNoneTag = styled.div`
+  font-size: 14px;
+  line-height: 200%;
+  color: #888;
 `;
 
 const Upload = () => {
   const [previews, setPreviews] = useState<string[]>([]); // 미리보기 이미지 URL 배열
   const [isMultiple, setIsMultiple] = useState(false); // 다중 선택 여부
   const [isSingleCss, setIsSingleCss] = useState(true); // 다중에서 단일 선택일 경우 CSS 조정
-
   const fileInputRef = useRef<HTMLInputElement>(null); // 파일 입력 참조
+  const filesRef = useRef<FileList | null>(null); // 선택된 파일들 참조
+
+  const [tagList, setTagList] = useState<string[]>([]); // 태그 리스트
+  const [tagInput, setTagInput] = useState(""); // 태그 입력 값
+  const tagListRef = useRef<HTMLDivElement>(null); // 태그 리스트 참조
+  const moreTagRef = useRef<HTMLDivElement>(null); // 숨겨진 더보기 태그 참조
+  // 태그 리스트 오버플로우 훅
+  const {visibleCount, hiddenCount} = useOverflowTagList<string>(
+    tagListRef,
+    moreTagRef,
+    tagList
+  );
+
+  const [content, setContent] = useState(""); // 게시물 내용
+  const [visibility, setVisibility] = useState<"PUBLIC" | "FOLLOWERS" | "PRIVATE">("PUBLIC");
+
+  const navigate = useNavigate();
 
   /** 다중 선택 여부 또는 미리보기 이미지 변경 시 CSS 조정 */
   useEffect(() => {
@@ -200,7 +253,7 @@ const Upload = () => {
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-
+    filesRef.current = files;
     handlePreviewChange(files);
   };
 
@@ -220,13 +273,117 @@ const Upload = () => {
 
   /** 다중 선택 모드 토글 핸들러 */
   const handleToggleMode = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    await refreshToken();
     setIsMultiple(e.target.checked); // 다중선택 모드 변경
     setPreviews([]); // 미리보기 이미지 싹 비우기 (초기화)
     
     // 실제 input 태그에 들어있는 파일 값도 초기화 (중요)
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+  };
+
+  /** 태그 입력 핸들러 */
+  const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTagInput(e.target.value);
+  };
+
+  /** 태그 추가 핸들러 (Enter 키) */
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && tagInput.trim() !== "") {
+      e.preventDefault();
+      const newTag = tagInput.trim().replace(/^#/, ""); // # 제거
+      if (!tagList.includes(newTag)) {
+        setTagList([...tagList, newTag]);
+      }
+      setTagInput(""); // 입력 필드 초기화
+    }
+  };
+
+  /** 태그 추가 핸들러 (포커스 아웃) */
+  const handleTagInputBlur = () => {
+    if (tagInput.trim() !== "") {
+      const newTag = tagInput.trim().replace(/^#/, ""); // # 제거
+      if (!tagList.includes(newTag)) {
+        setTagList([...tagList, newTag]);
+      }
+      setTagInput(""); // 입력 필드 초기화
+    }
+  };
+
+  const uploadFeed = async () => {
+    const Files = filesRef.current;
+
+    if (!Files || Files.length === 0) { // 파일이 없으면 종료
+      console.error("No files selected for upload.");
+      return;
+    } 
+
+    if (content.trim() === "") { // 내용이 없으면 종료
+      console.error("Content cannot be empty.");
+      return;
+    }
+
+    const lenFiles = Files.length;
+
+    const fileTypes = Array.from(Files).map(file => file.type);
+    const fileSizeBytes = Array.from(Files).map(file => file.size);
+
+    // 프리사인드 URL 요청
+    const presignResponse = await feedImagesPresign({
+      files: Array.from({ length: lenFiles }, (_, i) => ({
+        mimeType: fileTypes[i],
+        sizeBytes: fileSizeBytes[i],
+      })),
+    });
+
+    if (!presignResponse) return;
+
+    const [objectKeys, uploadUrls, maxSizeBytes] = [
+      presignResponse.items.map(item => item.objectKey),
+      presignResponse.items.map(item => item.uploadUrl),
+      presignResponse.items.map(item => item.maxSizeBytes),
+    ];
+
+    console.log("maxSizeBytes:", maxSizeBytes);
+
+    // 업로드 실행
+    const uploadResults = await Promise.all(Array.from({ length: lenFiles }, (_, i) => 
+      feedImagesUpload(uploadUrls[i], Files[i])
+    ));
+
+    if (uploadResults.includes(false)) {
+      console.error("Some images failed to upload.");
+      return;
+    }
+
+    // 이미지 크기 가져오기
+    const sizes = await Promise.all(
+      Array.from(Files).map(file => getImageSize(file))
+    );
+
+    const [widths, heights] = [
+      sizes.map(s => s.width),
+      sizes.map(s => s.height),
+    ];
+
+    const res = await PostFeed({
+      content: content,
+      tags: tagList,
+      visibility: visibility,
+      images: Array.from({ length: lenFiles }, (_, i) => ({
+        objectKey: objectKeys[i],
+        mimeType: fileTypes[i],
+        width: widths[i],
+        height: heights[i],
+        sizeBytes: fileSizeBytes[i]
+      })),
+    });
+    if (!res) {
+      console.error("Failed to post feed.");
+      return;
+    }
+    else {
+      navigate("/");
     }
   };
 
@@ -252,29 +409,69 @@ const Upload = () => {
               src={src}
               alt={`preview-${index}`}
             />
-          )) : <StyledNotSelectedFeedPage>올릴 게시물을 선택해주세요</StyledNotSelectedFeedPage>}
+          )) : 
+            <StyledNotSelectedFeedWrp>
+              <input
+              type="file"
+              multiple={isMultiple}
+              id="file-input"
+              onChange={handleFile}
+              hidden
+              />
+              <label htmlFor="file-input">
+                <StyledNotSelectedFeed>여기를 클릭하여 올릴 게시물을 선택해주세요</StyledNotSelectedFeed>
+              </label>
+            </StyledNotSelectedFeedWrp>
+          }
         </StyledUploadImgPreviewWrp>
 
         <StyledInputWrp>
           <StyledContentInput 
           type="text" 
           placeholder="설명을 입력하세요." 
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
         >
         </StyledContentInput>
         </StyledInputWrp>
         
-        <StyledTagListWrp>
-          <StyledTagList>
-            {Array.from({ length: 5 }).map((_, index) => (
-              <StyledTagListItem key={index}>#태그{index + 1}</StyledTagListItem>
-            ))}
+        {tagList.length > 0 ? <StyledTagListWrp>
+          <StyledTagList
+            ref={tagListRef}
+          >
+            {tagList
+              .slice(0, visibleCount ?? tagList.length)
+              .map((tag, index) => (
+                <StyledTagListItem key={index}>#{tag}</StyledTagListItem>
+              ))
+            }
+            {hiddenCount > 0 && (
+              <StyledTagListItem style={{
+                fontWeight: "bold"
+              }}>
+                +{hiddenCount}
+              </StyledTagListItem>
+            )}
           </StyledTagList>
-        </StyledTagListWrp>
+
+          {/* ✅ width 측정 전용 (절대 보이면 안 됨) */}
+          <HiddenMoreTag ref={moreTagRef}>
+            +99
+          </HiddenMoreTag>
+        </StyledTagListWrp> :
+          <StyledNoneTagWrp>
+            <StyledNoneTag>태그가 없습니다.</StyledNoneTag>
+          </StyledNoneTagWrp>
+        }
         
         <StyledTagInputWrp>
           <StyledTagInput 
-            type="text" 
-            placeholder="#day"
+            type="text"
+            placeholder="#태그 추가"
+            value={tagInput}
+            onChange={handleTagInputChange}
+            onKeyDown={handleTagInputKeyDown}
+            onBlur={handleTagInputBlur}
           >
           </StyledTagInput>
         </StyledTagInputWrp>
@@ -285,24 +482,39 @@ const Upload = () => {
 
         <StyledVisibilitySelectBtnListWrp>
           <StyledVisibilitySelectBtnList>
-            <StyledVisibilitySelectBtn>전체 공개</StyledVisibilitySelectBtn>
-            <StyledVisibilitySelectBtn>팔로워 공개</StyledVisibilitySelectBtn>
-            <StyledVisibilitySelectBtn>나만 보기</StyledVisibilitySelectBtn>
+            <StyledVisibilitySelectBtn
+              style={{
+                backgroundColor: visibility === "PUBLIC" ? "#1FA6F4" : "",
+                color: visibility === "PUBLIC" ? "white" : "",
+              }}
+              onClick={() => setVisibility("PUBLIC")}
+            >
+              전체 공개
+            </StyledVisibilitySelectBtn>
+            <StyledVisibilitySelectBtn
+              style={{
+                backgroundColor: visibility === "FOLLOWERS" ? "#1FA6F4" : "",
+                color: visibility === "FOLLOWERS" ? "white" : "",
+              }}
+              onClick={() => setVisibility("FOLLOWERS")}
+            >
+              팔로워 공개
+            </StyledVisibilitySelectBtn>
+            <StyledVisibilitySelectBtn
+              style={{
+                backgroundColor: visibility === "PRIVATE" ? "#1FA6F4" : "",
+                color: visibility === "PRIVATE" ? "white" : "",
+              }}
+              onClick={() => setVisibility("PRIVATE")}
+            >
+              나만 보기
+            </StyledVisibilitySelectBtn>
           </StyledVisibilitySelectBtnList>
         </StyledVisibilitySelectBtnListWrp>
 
       </StyledBody>
       <StyledUploadBtn>
-        <input
-          type="file"
-          multiple={isMultiple}
-          id="file-input"
-          onChange={handleFile}
-          style={{ display: "none" }}
-        />
-        <label htmlFor="file-input">
-          <StyledUploadIcon src={uploadIcon} />
-        </label>
+        <StyledUploadIcon src={uploadIcon} onClick={()=>{uploadFeed()}}/>
       </StyledUploadBtn>
       <Navbar />
     </Cnt>

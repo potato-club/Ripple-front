@@ -12,6 +12,7 @@ import noProfileImageSrc from "../../assets/icons/account.svg";
 import { PresignProfileImage } from "../../services/User/PresignProfileImage";
 import { uploadProfileImage } from "../../services/User/uploadProfileImage";
 import { patchProfile } from "../../services/User/patchProfile";
+import getImageSize from "../../utils/getImageSize";
 
 const StyledCnt = styled.div`
   height: 100%;
@@ -175,24 +176,6 @@ const Profile = () => {
     }
     return userProfile;
   }
-
-  const getImageSize = (file: File): Promise<{ width: number; height: number }> => {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-
-    img.onload = () => {
-      resolve({
-        width: img.naturalWidth,
-        height: img.naturalHeight,
-      });
-      URL.revokeObjectURL(url); // 메모리 해제
-    };
-
-    img.onerror = reject;
-    img.src = url;
-  });
-};
 
   useEffect(() => {
     if (username) {

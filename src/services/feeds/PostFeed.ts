@@ -17,29 +17,48 @@ export interface PostFeedResponse {
   bookmarkCount: number,
   commentCount: number,
   viewCount: number,
-  thumbnail: string,
-  mediaUrls: string[],
+  thumbnailUrl: string,
   feedStatus: FeedStatus,
   visibility: visibilityType,
   createdAt: string,
-  updatedAt: string
+}
+export interface PostFeedRequest {
+  content: string,
+  tags: string[],
+  visibility: visibilityType,
+  images?: {
+    objectKey: string,
+    mimeType: string,
+    width: number,
+    height: number
+    sizeBytes: number
+  }[],
+  video?: {
+    videoPrefix: string,
+    durationSec: number,
+    mimeType: string,
+    width: number,
+    height: number,
+    sizeBytes: number,
+    thumbnail: {
+      objectKey: string,
+      mimeType: string,
+      width: number,
+      height: number,
+      sizeBytes: number
+    }
+  },
 }
 
-export const PostFeed = async (content: string, thumbnail: string, mediaKeys: string[], tags: string[], visibility: visibilityType) => {
+export const PostFeed = async (request: PostFeedRequest) => {
   try {
-    const res = await axiosInstance.post<PostFeedResponse>(`/api/feeds`, {
-        content: content,
-        thumbnail: thumbnail,
-        mediaKeys: mediaKeys,
-        tags: tags,
-        visibility: visibility
-    });
+    const res = await axiosInstance.post<PostFeedResponse>(`/api/feeds`, request);
     return res.data;
   } catch (error) {
     if(isAxiosError(error)) {
       console.log("status:", error.response?.status);
       console.log(error.response?.data);
     }
-    throw error;
+    return false;
   }
 };
