@@ -1,8 +1,9 @@
 import styled from "styled-components";
 import Navbar from "../../components/Navbar";
 import uploadIcon from "../../assets/icons/upload.svg";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { use, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { refreshToken } from "../../services/Auth/refreshToken";
+import { useOverflowTagList } from "../../hooks/useOverflowTagList";
 
 const Cnt = styled.div`
   display: flex;
@@ -206,8 +207,13 @@ const Upload = () => {
   const [tagList, setTagList] = useState<string[]>([]); // 태그 리스트
   const [tagInput, setTagInput] = useState(""); // 태그 입력 값
   const tagListRef = useRef<HTMLDivElement>(null); // 태그 리스트 참조
-  const [visibleCount, setVisibleCount] = useState<number | null>(null); // 보여지는 태그 개수
   const moreTagRef = useRef<HTMLDivElement>(null); // 숨겨진 더보기 태그 참조
+  // 태그 리스트 오버플로우 훅
+  const {visibleCount, hiddenCount} = useOverflowTagList<string>(
+    tagListRef,
+    moreTagRef,
+    tagList
+  );
 
   const [content, setContent] = useState(""); // 게시물 내용
 
@@ -279,31 +285,6 @@ const Upload = () => {
     }
   };
 
-  /** 태그 리스트 오버플로우 감지 */
-  useLayoutEffect(() => {
-    if (!tagListRef.current || !moreTagRef.current) return;
-
-    const container = tagListRef.current;
-    const items = Array.from(container.children)
-      .filter(el => el instanceof HTMLElement) as HTMLElement[];
-
-    const maxX =
-      container.clientWidth - moreTagRef.current.offsetWidth;
-
-    let count = 0;
-
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-
-      const rightEdge = item.offsetLeft + item.offsetWidth;
-
-      if (rightEdge > maxX) break;
-      count++;
-    }
-
-    setVisibleCount(count);
-  }, [tagList]);
-
   return (
     <Cnt>
       <StyledHeader>
@@ -349,11 +330,11 @@ const Upload = () => {
                 <StyledTagListItem key={index}>#{tag}</StyledTagListItem>
               ))
             }
-            {visibleCount !== null && visibleCount < tagList.length && (
+            {hiddenCount > 0 && (
               <StyledTagListItem style={{
                 fontWeight: "bold"
               }}>
-                +{tagList.length - visibleCount}
+                +{hiddenCount}
               </StyledTagListItem>
             )}
           </StyledTagList>
