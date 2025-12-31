@@ -1,7 +1,7 @@
 import { isAxiosError } from "axios";
 import {axiosInstance} from "../axiosClient";
 
-type actionType = "KEEP" | "CLEAR " | "SET";
+type actionType = "KEEP" | "CLEAR" | "SET";
 
 export interface patchProfileResponse {
   id: number,
@@ -24,11 +24,9 @@ export interface profileImageRequest {
   }
 }
 
-export const PatchProfile = async (request: profileImageRequest) => {
+export const patchProfile = async (request: profileImageRequest) => {
   try {
-    const res = await axiosInstance.patch<patchProfileResponse>(`/api/users/me/profile`, {
-      request
-    });
+    const res = await axiosInstance.patch<patchProfileResponse>(`/api/users/me/profile`, request);
     console.log("patch profile response", res.data);
     if (res) return res.data;
   } catch (error) {

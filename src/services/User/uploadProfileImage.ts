@@ -1,9 +1,9 @@
 import axios, { AxiosError } from "axios";
 
-export const uploadProfileImage = async (uploadUrl: string, file: File, fileType: string) => {
+export const uploadProfileImage = async (uploadUrl: string, file: File) => {
   try {
     const res = await axios.put(uploadUrl, file, {
-      headers: {"Content-Type": fileType}
+      headers: {"Content-Type": file.type}
     });
     if (res.status !== 200) return false;
     return true;

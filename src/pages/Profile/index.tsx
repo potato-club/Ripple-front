@@ -11,7 +11,7 @@ import type { Comment } from "../../types/Comment";
 import noProfileImageSrc from "../../assets/icons/account.svg";
 import { PresignProfileImage } from "../../services/User/PresignProfileImage";
 import { uploadProfileImage } from "../../services/User/uploadProfileImage";
-import { PatchProfile } from "../../services/User/PatchProfile";
+import { patchProfile } from "../../services/User/patchProfile";
 
 const StyledCnt = styled.div`
   height: 100%;
@@ -234,7 +234,7 @@ const Profile = () => {
     const uploadUrl = res.uploadUrl;
     const objectKey = res.objectKey;
 
-    const uploadRes = await uploadProfileImage(uploadUrl, file, mimeType);
+    const uploadRes = await uploadProfileImage(uploadUrl, file);
     if (!uploadRes) {
       console.log("프로필 이미지 업로드 실패");
       setShowUpdateProfileImageModal(false);
@@ -243,7 +243,7 @@ const Profile = () => {
 
     const { width, height } = await getImageSize(file);
 
-    const data = await PatchProfile({
+    const data = await patchProfile({
       username: username ?? "",
       profileImage: {
         action: "SET",
