@@ -1,9 +1,13 @@
 import styled from "styled-components";
 import Navbar from "../../components/Navbar";
 import uploadIcon from "../../assets/icons/upload.svg";
-import { use, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { refreshToken } from "../../services/Auth/refreshToken";
+import { useEffect, useRef, useState } from "react";
 import { useOverflowTagList } from "../../hooks/useOverflowTagList";
+import { feedImagesPresign } from "../../services/feeds/feedImagesPresign";
+import getImageSize from "../../utils/getImageSize";
+import { feedImagesUpload } from "../../services/feeds/feedImagesUpload";
+import { PostFeed } from "../../services/feeds/PostFeed";
+import { useNavigate } from "react-router";
 
 const Cnt = styled.div`
   display: flex;
@@ -182,10 +186,15 @@ const StyledVisibilitySelectBtn = styled.button`
   border-radius: 8px;
 `;
 
-const StyledNotSelectedFeedPage = styled.div`
+const StyledNotSelectedFeedWrp = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: #f0f0f0;
+`;
+
+const StyledNotSelectedFeed = styled.div`
+  font-size: 16px;
 `;
 
 const HiddenMoreTag = styled.div`
@@ -198,11 +207,26 @@ const HiddenMoreTag = styled.div`
   font-weight: bold;
 `;
 
+const StyledNoneTagWrp = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+  min-height: 30px;
+`;
+
+const StyledNoneTag = styled.div`
+  font-size: 14px;
+  line-height: 200%;
+  color: #888;
+`;
+
 const Upload = () => {
   const [previews, setPreviews] = useState<string[]>([]); // 미리보기 이미지 URL 배열
   const [isMultiple, setIsMultiple] = useState(false); // 다중 선택 여부
   const [isSingleCss, setIsSingleCss] = useState(true); // 다중에서 단일 선택일 경우 CSS 조정
   const fileInputRef = useRef<HTMLInputElement>(null); // 파일 입력 참조
+  const filesRef = useRef<FileList | null>(null); // 선택된 파일들 참조
 
   const [tagList, setTagList] = useState<string[]>([]); // 태그 리스트
   const [tagInput, setTagInput] = useState(""); // 태그 입력 값
@@ -216,7 +240,9 @@ const Upload = () => {
   );
 
   const [content, setContent] = useState(""); // 게시물 내용
+  const [visibility, setVisibility] = useState<"PUBLIC" | "FOLLOWERS" | "PRIVATE">("PUBLIC");
 
+  const navigate = useNavigate();
 
   /** 다중 선택 여부 또는 미리보기 이미지 변경 시 CSS 조정 */
   useEffect(() => {
@@ -227,7 +253,7 @@ const Upload = () => {
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-
+    filesRef.current = files;
     handlePreviewChange(files);
   };
 
@@ -247,7 +273,6 @@ const Upload = () => {
 
   /** 다중 선택 모드 토글 핸들러 */
   const handleToggleMode = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    await refreshToken();
     setIsMultiple(e.target.checked); // 다중선택 모드 변경
     setPreviews([]); // 미리보기 이미지 싹 비우기 (초기화)
     
@@ -285,6 +310,83 @@ const Upload = () => {
     }
   };
 
+  const uploadFeed = async () => {
+    const Files = filesRef.current;
+
+    if (!Files || Files.length === 0) { // 파일이 없으면 종료
+      console.error("No files selected for upload.");
+      return;
+    } 
+
+    if (content.trim() === "") { // 내용이 없으면 종료
+      console.error("Content cannot be empty.");
+      return;
+    }
+
+    const lenFiles = Files.length;
+
+    const fileTypes = Array.from(Files).map(file => file.type);
+    const fileSizeBytes = Array.from(Files).map(file => file.size);
+
+    // 프리사인드 URL 요청
+    const presignResponse = await feedImagesPresign({
+      files: Array.from({ length: lenFiles }, (_, i) => ({
+        mimeType: fileTypes[i],
+        sizeBytes: fileSizeBytes[i],
+      })),
+    });
+
+    if (!presignResponse) return;
+
+    const [objectKeys, uploadUrls, maxSizeBytes] = [
+      presignResponse.items.map(item => item.objectKey),
+      presignResponse.items.map(item => item.uploadUrl),
+      presignResponse.items.map(item => item.maxSizeBytes),
+    ];
+
+    console.log("maxSizeBytes:", maxSizeBytes);
+
+    // 업로드 실행
+    const uploadResults = await Promise.all(Array.from({ length: lenFiles }, (_, i) => 
+      feedImagesUpload(uploadUrls[i], Files[i])
+    ));
+
+    if (uploadResults.includes(false)) {
+      console.error("Some images failed to upload.");
+      return;
+    }
+
+    // 이미지 크기 가져오기
+    const sizes = await Promise.all(
+      Array.from(Files).map(file => getImageSize(file))
+    );
+
+    const [widths, heights] = [
+      sizes.map(s => s.width),
+      sizes.map(s => s.height),
+    ];
+
+    const res = await PostFeed({
+      content: content,
+      tags: tagList,
+      visibility: visibility,
+      images: Array.from({ length: lenFiles }, (_, i) => ({
+        objectKey: objectKeys[i],
+        mimeType: fileTypes[i],
+        width: widths[i],
+        height: heights[i],
+        sizeBytes: fileSizeBytes[i]
+      })),
+    });
+    if (!res) {
+      console.error("Failed to post feed.");
+      return;
+    }
+    else {
+      navigate("/");
+    }
+  };
+
   return (
     <Cnt>
       <StyledHeader>
@@ -307,7 +409,20 @@ const Upload = () => {
               src={src}
               alt={`preview-${index}`}
             />
-          )) : <StyledNotSelectedFeedPage>올릴 게시물을 선택해주세요</StyledNotSelectedFeedPage>}
+          )) : 
+            <StyledNotSelectedFeedWrp>
+              <input
+              type="file"
+              multiple={isMultiple}
+              id="file-input"
+              onChange={handleFile}
+              hidden
+              />
+              <label htmlFor="file-input">
+                <StyledNotSelectedFeed>여기를 클릭하여 올릴 게시물을 선택해주세요</StyledNotSelectedFeed>
+              </label>
+            </StyledNotSelectedFeedWrp>
+          }
         </StyledUploadImgPreviewWrp>
 
         <StyledInputWrp>
@@ -320,7 +435,7 @@ const Upload = () => {
         </StyledContentInput>
         </StyledInputWrp>
         
-        <StyledTagListWrp>
+        {tagList.length > 0 ? <StyledTagListWrp>
           <StyledTagList
             ref={tagListRef}
           >
@@ -343,7 +458,11 @@ const Upload = () => {
           <HiddenMoreTag ref={moreTagRef}>
             +99
           </HiddenMoreTag>
-        </StyledTagListWrp>
+        </StyledTagListWrp> :
+          <StyledNoneTagWrp>
+            <StyledNoneTag>태그가 없습니다.</StyledNoneTag>
+          </StyledNoneTagWrp>
+        }
         
         <StyledTagInputWrp>
           <StyledTagInput 
@@ -363,24 +482,39 @@ const Upload = () => {
 
         <StyledVisibilitySelectBtnListWrp>
           <StyledVisibilitySelectBtnList>
-            <StyledVisibilitySelectBtn>전체 공개</StyledVisibilitySelectBtn>
-            <StyledVisibilitySelectBtn>팔로워 공개</StyledVisibilitySelectBtn>
-            <StyledVisibilitySelectBtn>나만 보기</StyledVisibilitySelectBtn>
+            <StyledVisibilitySelectBtn
+              style={{
+                backgroundColor: visibility === "PUBLIC" ? "#1FA6F4" : "",
+                color: visibility === "PUBLIC" ? "white" : "",
+              }}
+              onClick={() => setVisibility("PUBLIC")}
+            >
+              전체 공개
+            </StyledVisibilitySelectBtn>
+            <StyledVisibilitySelectBtn
+              style={{
+                backgroundColor: visibility === "FOLLOWERS" ? "#1FA6F4" : "",
+                color: visibility === "FOLLOWERS" ? "white" : "",
+              }}
+              onClick={() => setVisibility("FOLLOWERS")}
+            >
+              팔로워 공개
+            </StyledVisibilitySelectBtn>
+            <StyledVisibilitySelectBtn
+              style={{
+                backgroundColor: visibility === "PRIVATE" ? "#1FA6F4" : "",
+                color: visibility === "PRIVATE" ? "white" : "",
+              }}
+              onClick={() => setVisibility("PRIVATE")}
+            >
+              나만 보기
+            </StyledVisibilitySelectBtn>
           </StyledVisibilitySelectBtnList>
         </StyledVisibilitySelectBtnListWrp>
 
       </StyledBody>
       <StyledUploadBtn>
-        <input
-          type="file"
-          multiple={isMultiple}
-          id="file-input"
-          onChange={handleFile}
-          style={{ display: "none" }}
-        />
-        <label htmlFor="file-input">
-          <StyledUploadIcon src={uploadIcon} />
-        </label>
+        <StyledUploadIcon src={uploadIcon} onClick={()=>{uploadFeed()}}/>
       </StyledUploadBtn>
       <Navbar />
     </Cnt>
