@@ -11,6 +11,8 @@ export const Cnt = styled.div`
   z-index: 999999;
   flex-direction: column;
   color: #eee;
+  overflow-y: auto;
+  overflow-x: hidden;
 `;
 export const Header = styled.div`
   display: flex;
@@ -18,6 +20,7 @@ export const Header = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
+  flex-shrink: 0;
 `;
 export const HeaderLeft = styled.div`
   display: flex;
@@ -43,6 +46,7 @@ export const MediasOut = styled.div`
   width: 100%;
   overflow-x: scroll;
   overflow-y: hidden;
+  flex-shrink: 0;
 `;
 export const MediasIn = styled.div`
   display: flex;
@@ -61,6 +65,7 @@ export const MediaItemVid = styled.video``;
 export const Content = styled.div`
   background-color: #333;
   padding: 8px 16px;
+  flex-shrink: 0;
 `;
 export const ContentTitle = styled.div`
   font-size: 24px;
@@ -73,6 +78,7 @@ export const CommentInputSection = styled.div`
   padding: 16px;
   border-bottom: 1px solid #444;
   background-color: #2a2a2a;
+  flex-shrink: 0;
 `;
 
 export const CommentInputWrapper = styled.div`

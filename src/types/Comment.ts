@@ -5,7 +5,7 @@ export interface Comment {
     username: string;
     profileImageUrl: string | null;
   };
-  rootCommentId: number;
+  rootCommentId: number | null;
   replyToUserId: number | null;
   replyToCommentId: number | null;
   content: string | null;

@@ -9,7 +9,7 @@ const CommentSchema = z.object({
     username: z.string(),
     profileImageUrl: z.string().nullable(),
   }),
-  rootCommentId: z.number(),
+  rootCommentId: z.number().nullable(),
   replyToUserId: z.number().nullable(),
   replyToCommentId: z.number().nullable(),
   content: z.string().nullable(),
@@ -45,8 +45,11 @@ export const getComments = async (
   try {
     const res = await axiosInstance.get<CommentsResponse>(`/api/feeds/${feedId}/comments`, 
       {
-        params: {
-          cursorId: cursorId ?? 0,
+        params: cursorId ? {
+          cursorId: cursorId,
+          size: size ?? 3,
+          sort: sort ?? "LATEST"
+        } : {
           size: size ?? 3,
           sort: sort ?? "LATEST"
         }
@@ -54,6 +57,7 @@ export const getComments = async (
     const data = res.data;
 
     if (isComments(data)) {
+      console.log("댓글 불러오기 성공:", data);
       return data;
     } else {
       console.error(
