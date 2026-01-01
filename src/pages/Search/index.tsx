@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import * as S from "./Search.styles";
@@ -16,7 +15,6 @@ interface SearchResult {
 }
 
 const Search = () => {
-  const navigator = useNavigate();
   const [searchResults, setSearchResults] = useState<SearchResult>();
 
   async function search(term: string) {
@@ -40,6 +38,7 @@ const Search = () => {
   // 탭 이름 변경
   useEffect(() => {
     document.title = "Ripple | 검색";
+    search("");
   }, []);
 
   return (

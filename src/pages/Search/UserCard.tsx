@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import profileImagePlaceholderSrc from "../../assets/icons/account.svg";
+import { useNavigate } from "react-router";
 
 const StyledCnt = styled.div`
   display: flex;
@@ -55,9 +56,10 @@ export const UserCard = ({
   profileImageUrl,
   onFollow,
 }: UserCardProps) => {
+  const navigator = useNavigate();
   return (
     <StyledCnt>
-      <StyledHeader>
+      <StyledHeader onClick={() => navigator(`/${username}`)}>
         <StyledProfileImage
           src={profileImageUrl ?? profileImagePlaceholderSrc}
           alt=""
