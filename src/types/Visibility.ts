@@ -1,0 +1,1 @@
+export type visibilityType = "PUBLIC" | "FOLLOWERS" | "PRIVATE"

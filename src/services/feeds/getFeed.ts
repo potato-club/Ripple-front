@@ -14,10 +14,11 @@ const FeedSchema = z.object({
   likeCount: z.number(),
   bookmarkCount: z.number(),
   commentCount: z.number(),
-  createdAt: z.string(),
   viewCount: z.number(),
-  visibility: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"]),
+  thumbnailUrl: z.string().nullable(),
   feedStatus: z.enum(["PUBLISHED", "DELETED"]),
+  visibility: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"]),
+  createdAt: z.string(),
 });
 
 const ResponseSchema = z.object({

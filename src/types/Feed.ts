@@ -1,18 +1,17 @@
 import type { Author } from "./Author";
-
+import type { FeedStatus } from "./FeedStatus";
+import type { visibilityType } from "./Visibility";
 export interface Feed {
   id: number;
-  thumbnail: string | null;
   author: Author;
-  content: string | null;
-  feedStatus: "PUBLISHED";
-  visibility: "PUBLIC";
-  mediaUrls: string[];
+  content: string|null;
   tags: string[];
   likeCount: number;
   bookmarkCount: number;
   commentCount: number;
-  createdAt: string;
-  updatedAt: string;
   viewCount: number;
+  thumbnailUrl: string | null;
+  feedStatus: FeedStatus;
+  visibility: visibilityType;
+  createdAt: string;
 }
