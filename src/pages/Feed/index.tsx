@@ -6,7 +6,7 @@ import rippleIcon from "../../assets/ripple-icon.png";
 import directMessageIcon from "../../assets/icons/dm.svg";
 import { useNavigate } from "react-router";
 import { getUniqueBy } from "../../utils/getUniqueBy";
-import { getFeed } from "../../services/feeds/getFeed";
+import { getHoomFeeds } from "../../services/feeds/getHoomFeeds";
 import { FeedItem } from "./FeedItem";
 import { useIsLoggedIn } from "../../hooks/useIsLoggedIn";
 
@@ -68,7 +68,7 @@ const FeedPage = () => {
     setIsLoading(true);
 
     try {
-      const res = await getFeed(cursorRef.current, 3);
+      const res = await getHoomFeeds(cursorRef.current, 3);
 
       if (res.error) {
         navigate("/login");

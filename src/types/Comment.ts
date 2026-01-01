@@ -1,6 +1,12 @@
 export interface Comment {
   id: number;
-  authorId: number;
-  username: string;
-  content: string;
+  author: {
+    id: number;
+    username: string;
+    profileImageUrl: string | null;
+  };
+  rootCommentId: number;
+  replyToUserId: number | null;
+  replyToCommentId: number | null;
+  content: string | null;
 }

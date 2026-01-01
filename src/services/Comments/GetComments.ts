@@ -1,28 +1,30 @@
-import { isAxiosError } from "axios";
 import {axiosInstance} from "../axiosClient";
+import z from "zod";
+import type { CommentSortType } from "../../types/CommentSortType";
 
-type CommentSortType = "LATEST" | "MOST_LIKED";
+const CommentSchema = z.object({
+  id: z.number(),
+  author: z.object({
+    id: z.number(),
+    username: z.string(),
+    profileImageUrl: z.string().nullable(),
+  }),
+  rootCommentId: z.number(),
+  replyToUserId: z.number().nullable(),
+  replyToCommentId: z.number().nullable(),
+  content: z.string().nullable(),
+});
 
-export interface GetCommentsResponse {
-  comments: [
-    {
-      id: number,
-      author: {
-        id: number,
-        username: string,
-        profileImageUrl: string
-      }
-      rootCommentId: number,
-      replyToUserId: number,
-      replyToCommentId: number,
-      content: string,
-      likeCount: number,
-      deleted: boolean,
-      createdAt: string
-    }
-  ],
-  nextCursor: number,
-  hasNext: boolean
+const CommentsSchema = z.object({
+  comments: z.array(CommentSchema),
+  hasNext: z.boolean(),
+  nextCursor: z.number().nullable(),
+});
+
+type CommentsResponse = z.infer<typeof CommentsSchema>;
+
+function isComments(arr: any): arr is CommentsResponse {
+  return CommentsSchema.safeParse(arr).success;
 }
 
 /**
@@ -32,19 +34,33 @@ export interface GetCommentsResponse {
  * sort=MOST_LIKED: 좋아요순(커서 페이징 비활성: nextCursor=null, hasNext=false)
  */
 
-export const GetComments = async (feedId : number, cursorId: number, size: number, sort: CommentSortType) => {
+export const getComments = async (
+  feedId : number, 
+  cursorId?: number,
+  size?: number,
+  sort?: CommentSortType): Promise<CommentsResponse | false> => {
   try {
-    const res = await axiosInstance.get<GetCommentsResponse>(`/api/feeds/${feedId}/comments`, {params: {
-        cursorId: cursorId,
-        size: size,
-        sort: sort
-    }});
-    return res.data;
-  } catch (error) {
-    if(isAxiosError(error)) {
-      console.log("status:", error.response?.status);
-      console.log(error.response?.data);
+    const res = await axiosInstance.get<CommentsResponse>(`/api/feeds/${feedId}/comments`, 
+      {
+        params: {
+          cursorId: cursorId ?? 0,
+          size: size ?? 3,
+          sort: sort ?? "LATEST"
+        }
+      });
+    const data = res.data;
+
+    if (isComments(data)) {
+      return data;
+    } else {
+      console.error(
+        "API 응답이 예상되는 Comment[] 구조와 일치하지 않습니다.",
+        data
+      );
+      return false;
     }
-    throw error;
+  } catch (error) {
+    console.error("피드를 불러오는 중 오류 발생:", error);
+    return false;
   }
 };
