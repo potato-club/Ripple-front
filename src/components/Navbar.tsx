@@ -5,6 +5,8 @@ import homeImg from "../assets/icons/home.svg";
 import searchImg from "../assets/icons/search.svg";
 import feedImg from "../assets/icons/feed.svg";
 import accountImg from "../assets/icons/account.svg";
+import { useMyProfileStore } from "../stores/useMyProfileStore";
+import { useEffect } from "react";
 
 const StyledCnt = styled.div`
   padding: 10px;
@@ -12,12 +14,14 @@ const StyledCnt = styled.div`
   display: flex;
   justify-content: space-around;
   align-items: center;
-  position: absolute;
+  position: fixed;
   bottom: 0;
   width: 100%;
+  flex-shrink: 0;
 `;
 const StyledShortcut = styled.img`
   height: 60px;
+  padding: 6px;
   cursor: pointer;
 `;
 
@@ -28,12 +32,18 @@ const StyledShortcut = styled.img`
  */
 const Navbar = () => {
   const navigator = useNavigate();
+  const myProfile = useMyProfileStore((state) => state.data);
+  const refreshMyProfile = useMyProfileStore((state) => state.refresh);
+  function navigateToProfilePage() {
+    if (myProfile) navigator("/"+myProfile.username);
+    refreshMyProfile();
+  }
   return (
     <StyledCnt>
       <StyledShortcut src={homeImg} onClick={() => navigator("/")} />
       <StyledShortcut src={searchImg} onClick={() => navigator("/search")} />
       <StyledShortcut src={feedImg} onClick={() => navigator("/upload")} />
-      <StyledShortcut src={accountImg} onClick={() => navigator("/username")} />
+      <StyledShortcut src={accountImg} onClick={navigateToProfilePage} />
     </StyledCnt>
   );
 };

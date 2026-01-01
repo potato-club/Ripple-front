@@ -111,6 +111,8 @@ const Login = () => {
     const res = await logIn(data.id, data.pw);
     if (res.ok) {
       setIsLoginErr(false);
+      navigate("/");
+      console.log(errors); // 이거 쓰긴 써야함
     } else {
       setIsLoginErr(true);
     }

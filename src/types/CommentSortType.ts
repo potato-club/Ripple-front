@@ -1,0 +1,1 @@
+export type CommentSortType = "LATEST" | "MOST_LIKED";

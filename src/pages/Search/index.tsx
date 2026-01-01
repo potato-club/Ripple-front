@@ -1,167 +1,102 @@
-import styled from "styled-components";
-import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
-import { HideScrollbar } from "../../styles/HideScrollbar";
+import * as S from "./Search.styles";
 
 import { UserCard } from "./UserCard";
 
 import searchIcon from "../../assets/icons/search.svg";
-
-const StyledCnt = styled.div`
-  height: 100%;
-  aspect-ratio: 9 / 19;
-  margin: auto;
-
-  display: flex;
-  flex-direction: column;
-
-  @media (max-width: 768px) {
-    aspect-ratio: unset;
-  }
-`;
-const StyledHeader = styled.div`
-  flex-shrink: 0;
-  height: 85px;
-  background-color: #222;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 22px 27px;
-`;
-const StyledUsername = styled.div`
-  font-size: 32px;
-  line-height: 39px;
-  display: flex;
-  align-items: center;
-  justify-content: left;
-  gap: 10px;
-  & > img {
-    width: 42px;
-  }
-`;
-const StyledContent = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-`;
-const StyledSearchSection = styled.div`
-  flex-shrink: 0;
-  display: flex;
-  height: 124px;
-  padding: 12px 21px;
-  gap: 15px;
-  align-items: center;
-  justify-content: space-around;
-`;
-const StyledSearchInput = styled.input.attrs({
-  type: "text",
-  placeholder: "검색어를 입력하세요",
-})`
-  width: 100%;
-  background: #eee;
-  border: none;
-  padding: 8px 12px;
-  &:focus {
-    outline: none;
-  }
-`;
-const StyledScrollAreaOut = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: 0 22px;
-  ${HideScrollbar}
-`;
-const StyledScrollAreaIn = styled.div`
-  height: max-content;
-`;
-const StyledNavbarWrapper = styled.div`
-  flex-shrink: 0;
-  height: 85px;
-  position: relative;
-  background: #f4f4f4;
-`;
+import { searchUser } from "../../services/User/searchUser";
+import { FollowUser } from "../../services/User/Follow/FollowUser";
+import { UnFollowUser } from "../../services/User/Follow/UnFollowUser";
 
 interface SearchResult {
-  userId: number;
-  username: string;
-  profileImage: string;
+  items: {
+    id: number;
+    username: string;
+    profileImageUrl: string | null;
+    following: boolean;
+  }[];
+  nextCursor: number | null;
+  hasNext: boolean;
 }
 
-const 임시검색결과1 = [
-  {
-    userId: 1,
-    username: "하영",
-    profileImage:
-      "https://res.cloudinary.com/dakcrgcnt/image/upload/v1754237963/testprofileimage.png",
-  },
-];
-const 임시검색결과2 = [
-  {
-    userId: 1,
-    username: "하영2",
-    profileImage:
-      "https://res.cloudinary.com/dakcrgcnt/image/upload/v1754237963/testprofileimage.png",
-  },
-];
-
 const Search = () => {
-  const navigator = useNavigate();
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult>();
 
-  function search(term: string) {
-    if (term === "하영") setSearchResults(임시검색결과1);
-    else if (term === "하영2") setSearchResults(임시검색결과2);
-    else setSearchResults([]);
+  async function search(term: string) {
+    try {
+      const res = await searchUser(term, 20);
+      setSearchResults(res);
+      console.log(res);
+    } catch (err) {
+      console.error(err);
+      setSearchResults({
+        hasNext: false,
+        items: [],
+        nextCursor: null,
+      });
+    }
   }
 
-  function handleFollow(userId: number) {
-    console.log(`유저 아이디 ${userId}를 팔로우합니다.`);
+  async function handleFollow(id: number) {
+    const res = await FollowUser(id);
+    if (res)
+      console.log(
+        `[ ID: ${res.fromUserId} > ID: ${res.toUserId} ] => Following: ${res.following}`
+      );
+  }
+
+  async function handleUnfollow(id: number) {
+    const res = await UnFollowUser(id);
+    if (res) console.log("언팔로우:", id);
   }
 
   // 탭 이름 변경
   useEffect(() => {
     document.title = "Ripple | 검색";
+    search("");
   }, []);
 
   return (
-    <StyledCnt>
-      <StyledHeader>
-        <StyledUsername>
+    <S.Cnt>
+      <S.Header>
+        <S.Username>
           <img src={searchIcon} />
           <span>검색</span>
-        </StyledUsername>
-      </StyledHeader>
+        </S.Username>
+      </S.Header>
 
-      <StyledContent>
-        <StyledSearchSection>
-          <StyledSearchInput onChange={(e) => search(e.currentTarget.value)} />
-        </StyledSearchSection>
+      <S.Content>
+        <S.SearchSection>
+          <S.SearchInput onChange={(e) => search(e.currentTarget.value)} />
+        </S.SearchSection>
 
-        <StyledScrollAreaOut>
-          <StyledScrollAreaIn>
-            {searchResults.length > 0
-              ? searchResults.map((e) => (
-                  <UserCard
-                    key={e.userId}
-                    userId={e.userId}
-                    username={e.username}
-                    profileImage={e.profileImage}
-                    onProfileClick={() => navigator(`/${e.userId}`)}
-                    onFollow={handleFollow}
-                  />
-                ))
-              : "검색 결과가 없습니다."}
-          </StyledScrollAreaIn>
-        </StyledScrollAreaOut>
-      </StyledContent>
+        <S.ScrollAreaOut>
+          <S.ScrollAreaIn>
+            {searchResults && searchResults.items.length !== 0 ? (
+              searchResults.items.map((e) => (
+                <UserCard
+                  key={e.id}
+                  id={e.id}
+                  username={e.username}
+                  profileImageUrl={e.profileImageUrl}
+                  onFollow={handleFollow}
+                  onUnfollow={handleUnfollow}
+                  onProfileClick={() => {}}
+                  isFollowing={e.following}
+                />
+              ))
+            ) : (
+              <S.NoResult>검색 결과가 없어요</S.NoResult>
+            )}
+          </S.ScrollAreaIn>
+        </S.ScrollAreaOut>
+      </S.Content>
 
-      <StyledNavbarWrapper>
+      <S.NavbarWrapper>
         <Navbar />
-      </StyledNavbarWrapper>
-    </StyledCnt>
+      </S.NavbarWrapper>
+    </S.Cnt>
   );
 };
 
