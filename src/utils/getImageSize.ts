@@ -1,4 +1,4 @@
-const getImageSize = (file: File): Promise<{ width: number; height: number }> => {
+const getImageSize = (file: File | Blob): Promise<{ width: number; height: number }> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);

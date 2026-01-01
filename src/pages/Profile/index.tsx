@@ -13,10 +13,13 @@ import { PresignProfileImage } from "../../services/User/PresignProfileImage";
 import { uploadProfileImage } from "../../services/User/uploadProfileImage";
 import { patchProfile } from "../../services/User/patchProfile";
 import getImageSize from "../../utils/getImageSize";
+import profilePlaceholder from "../../assets/icons/account.svg";
+import type { Feed } from "../../types/Feed";
+import { resizeImage } from "../../utils/resizeImage";
+import { clearProfile } from "../../services/User/clearProfile";
 
 const StyledCnt = styled.div`
   height: 100%;
-  aspect-ratio: 9 / 19;
   margin: auto;
 
   background-color: var(--color-bg);
@@ -24,10 +27,6 @@ const StyledCnt = styled.div`
 
   display: flex;
   flex-direction: column;
-
-  @media (max-width: 768px) {
-    aspect-ratio: unset;
-  }
 `;
 const StyledHeader = styled.div`
   flex-shrink: 0;
@@ -120,6 +119,7 @@ const StyledUserNotFound = styled.div`
   text-align: center;
   padding-top: 64px;
 `;
+// Upload profile image modal
 const SUpdateProfileImageModal = styled.div`
   background: #000000a0;
   width: 100%;
@@ -137,35 +137,70 @@ const SUpdateProfileImageModalIn = styled.div`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -55%);
+  padding: 16px 24px 24px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
 `;
 const SUpdateProfileImageModalTitle = styled.h1`
   color: #eee;
   font-size: 24px;
 `;
-const SUpdateProfileImageModalInputDisplay = styled.div``;
+const SUpdateProfileImageModalInputDisplay = styled.div`
+  background: #333;
+  width: 95%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+`;
 const SUpdateProfileImageModalInput = styled.input.attrs({ type: "file" })`
   display: none;
 `;
+const SUpdateProfileImageModalInputSubmitButtonWrapper = styled.div`
+  display: flex;
+  width: 100%;
+  gap: 8px;
+`;
 const SUpdateProfileImageModalInputSubmitButton = styled.button`
-  background-color: #fff;
+  background-color: var(--color-primary);
   border-radius: 8px;
   padding: 8px;
-  color: black;
+  color: #fff;
+  flex-grow: 1;
+  font-weight: 500;
+`;
+const SUpdateProfileImageModalInputSubmitButtonRemove = styled.button`
+  background-color: #d15a5aff;
+  border-radius: 8px;
+  padding: 8px;
+  color: #fff;
+  flex-grow: 1;
+  font-weight: 500;
 `;
 
 const Profile = () => {
   const navigator = useNavigate();
 
   const [userNotFound, setUserNotFound] = useState(false);
-  
+
   const { username } = useParams<{ username: string }>();
   const [profileImgSrc, setProfileImgSrc] = useState<string | null>();
   const [comments] = useState<Comment[]>([]);
-  const [feeds] = useState([1, 2, 3, 4, 5, 6, 7, 8]);
+  const [feeds, setFeeds] = useState<Feed[]>([]);
 
-  const [postCount] = useState(5);
-  const [followerCount] = useState(12);
-  const [followingCount] = useState(32);
+  const [postCount, setPostCount] = useState(0);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+
+  const [updateProfileImagePreview, setUpdateProfileImagePreview] =
+    useState<File | null>(null);
 
   async function getUserProfile(username: string) {
     // const myProfile = await getMyProfile();
@@ -187,6 +222,9 @@ const Profile = () => {
           return;
         }
         setProfileImgSrc(userProfile.profileImageUrl);
+        setPostCount(userProfile.postCount);
+        setFollowerCount(userProfile.followerCount);
+        setFollowingCount(userProfile.followingCount);
 
         document.title = `Ripple | ${userProfile.username}의 프로필`;
       })();
@@ -199,13 +237,17 @@ const Profile = () => {
   // 프로필이미지 바꾸기
   async function updateProfileImage() {
     const input = updateProfileImageModalInputRef.current;
+    // 값 존재여부 검증
     if (!input) return false;
     const files = input.files;
     if (!files) return false;
     const file = files.item(0);
     if (!file) return false;
-    const sizeBytes = file.size;
-    const mimeType = file.type;
+    // 리사이즈
+    const resizedFile = await resizeImage(file, 256, 256);
+    // 이후로직
+    const sizeBytes = resizedFile.size;
+    const mimeType = resizedFile.type;
     console.log(sizeBytes, mimeType);
 
     const res = await PresignProfileImage(mimeType, sizeBytes);
@@ -217,14 +259,14 @@ const Profile = () => {
     const uploadUrl = res.uploadUrl;
     const objectKey = res.objectKey;
 
-    const uploadRes = await uploadProfileImage(uploadUrl, file);
+    const uploadRes = await uploadProfileImage(uploadUrl, resizedFile);
     if (!uploadRes) {
       console.log("프로필 이미지 업로드 실패");
       setShowUpdateProfileImageModal(false);
       return false;
     }
 
-    const { width, height } = await getImageSize(file);
+    const { width, height } = await getImageSize(resizedFile);
 
     const data = await patchProfile({
       username: username ?? "",
@@ -234,8 +276,8 @@ const Profile = () => {
         mimeType: mimeType,
         width: width,
         height: height,
-        sizeBytes: sizeBytes
-      }
+        sizeBytes: sizeBytes,
+      },
     });
     if (!data) {
       console.log("프로필 이미지 변경 실패");
@@ -252,7 +294,13 @@ const Profile = () => {
   }
   function handleChangeUpdateProfileInputModalInput(
     e: React.ChangeEvent<HTMLInputElement>
-  ) {}
+  ) {
+    const file = e.currentTarget.files?.[0];
+    if (file) {
+      // console.log(URL.createObjectURL(file));
+      setUpdateProfileImagePreview(file);
+    }
+  }
 
   const [showUpdateProfileImageModal, setShowUpdateProfileImageModal] =
     useState(false);
@@ -265,21 +313,48 @@ const Profile = () => {
       ) : (
         <>
           {showUpdateProfileImageModal && (
-            <SUpdateProfileImageModal>
+            <SUpdateProfileImageModal
+              onClick={(e) => {
+                if (e.currentTarget === e.target) {
+                  setShowUpdateProfileImageModal(false);
+                }
+              }}
+            >
               <SUpdateProfileImageModalIn>
-                <SUpdateProfileImageModalTitle
-                  onClick={handleClickUpdateProfileImageModalInput}
-                >
+                <SUpdateProfileImageModalTitle>
                   프로필 이미지 업데이트
                 </SUpdateProfileImageModalTitle>
-                <SUpdateProfileImageModalInputDisplay>
-                  이미지를 선택하세요
-                </SUpdateProfileImageModalInputDisplay>
-                <SUpdateProfileImageModalInputSubmitButton
-                  onClick={updateProfileImage}
+                <SUpdateProfileImageModalInputDisplay
+                  onClick={handleClickUpdateProfileImageModalInput}
+                  style={
+                    updateProfileImagePreview
+                      ? {
+                          backgroundImage: `url("${URL.createObjectURL(
+                            updateProfileImagePreview
+                          )}")`,
+                        }
+                      : { backgroundImage: "none" }
+                  }
                 >
-                  업로드
-                </SUpdateProfileImageModalInputSubmitButton>
+                  {updateProfileImagePreview
+                    ? "이미지 변경"
+                    : "이미지를 선택하세요"}
+                </SUpdateProfileImageModalInputDisplay>
+                <SUpdateProfileImageModalInputSubmitButtonWrapper>
+                  <SUpdateProfileImageModalInputSubmitButtonRemove
+                    onClick={() => {
+                      clearProfile(username!);
+                      location.reload();
+                    }}
+                  >
+                    초기화
+                  </SUpdateProfileImageModalInputSubmitButtonRemove>
+                  <SUpdateProfileImageModalInputSubmitButton
+                    onClick={updateProfileImage}
+                  >
+                    업로드
+                  </SUpdateProfileImageModalInputSubmitButton>
+                </SUpdateProfileImageModalInputSubmitButtonWrapper>
                 <SUpdateProfileImageModalInput
                   ref={updateProfileImageModalInputRef}
                   onChange={handleChangeUpdateProfileInputModalInput}
@@ -323,10 +398,10 @@ const Profile = () => {
                     {comments.map((cmt) => (
                       <ReplyItem
                         key={cmt.id}
-                        username={cmt.username}
-                        content={cmt.content}
+                        username={cmt.author.username}
+                        content={cmt.content ?? ""}
                         date={cmt.id.toString()}
-                        img={""}
+                        img={cmt.author.profileImageUrl ?? profilePlaceholder}
                       />
                     ))}
                   </StyledRepliesWrapper>
@@ -335,8 +410,8 @@ const Profile = () => {
                 <StyledFeedSection>
                   <StyledSectionTitle>게시한 피드</StyledSectionTitle>
                   <StyledFeedWrapper>
-                    {feeds.map((feed, i) => (
-                      <FeedCard key={i} />
+                    {feeds.map((feed) => (
+                      <FeedCard key={feed.id} feed={feed} />
                     ))}
                   </StyledFeedWrapper>
                 </StyledFeedSection>

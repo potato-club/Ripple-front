@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import type { Feed } from "../../types/Feed";
 
 const StyledCnt = styled.div`
   display: flex;
@@ -14,7 +15,7 @@ const StyledThumbnail = styled.img`
   color: white;
 `;
 
-export const FeedCard = () => {
+export const FeedCard = ({ feed }: { feed: Feed }) => {
   return (
     <StyledCnt>
       <StyledThumbnail src="https://picsum.photos/500/500" />
