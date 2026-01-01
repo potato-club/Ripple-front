@@ -44,7 +44,7 @@ export const FeedItem = ({ feed }: { feed: Feed }) => {
   };
   return (
     <S.Cnt ref={observerRef}>
-      <S.MediaContents></S.MediaContents>
+      <S.MediaContents>{feed.thumbnailUrl && <S.MediaContentImage src={feed.thumbnailUrl} alt="thumbnail" />}</S.MediaContents>
       <S.Body>
         <S.Header>
           <S.Author>@{feed.author.username}</S.Author>

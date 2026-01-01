@@ -1,11 +1,13 @@
 import styled from "styled-components";
 
-export const Cnt = styled.div``;
+export const Cnt = styled.div`
+  width: 100%;
+`;
 export const Content = styled.div``;
 export const MediaContents = styled.div`
   display: flex;
-  overflow-x: scroll;
-  width: 100%;
+  // overflow-x: scroll; 스크롤 안생기고 찌그러지게
+  height: 100%;
   aspect-ratio: 1/1;
 `;
 export const MediaContentImageWrp = styled.div`
@@ -19,7 +21,9 @@ export const MediaContentVideoWrp = styled.div`
   aspect-ratio: 1/1;
 `;
 export const MediaContentImage = styled.img`
+  width: 100%;
   height: 100%;
+  object-fit: cover;
 `;
 export const MediaContentVideo = styled.video`
   height: 100%;
