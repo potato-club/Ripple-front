@@ -12,7 +12,7 @@ export const Cnt = styled.div`
   flex-direction: column;
   color: #eee;
   overflow-y: auto;
-  overflow-x: hidden;
+  padding-bottom: 80px;
 `;
 export const Header = styled.div`
   display: flex;
