@@ -20,7 +20,8 @@ interface MyProfileState {
 export const useMyProfileStore = create<MyProfileState>((set) => ({
   refresh: async () => {
     const myProfile = await getMyProfile();
+    // console.log(myProfile)
     if (myProfile) set({ data: myProfile });
-    console.log("Failed to get my profile");
+    else console.log("Failed to get my profile");
   },
 }));

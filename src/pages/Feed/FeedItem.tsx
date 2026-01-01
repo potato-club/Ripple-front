@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import type { Comment } from "../../types/Comment";
 import { getComments } from "../../services/Comments/GetComments";
 import * as S from "./FeedItems.styles";
+import { useMyProfileStore } from "../../stores/useMyProfileStore";
+import prf from "../../assets/icons/account.svg";
 
 export const FeedItem = ({
   feed,
@@ -57,19 +59,24 @@ export const FeedItem = ({
       </S.MediaContents>
       <S.Body>
         <S.Header>
-          <S.Author>@{feed.author.username}</S.Author>
+          <S.HeaderProfile>
+            <S.ProfileImage src={feed.author.profileImageUrl ?? prf} />
+            <S.Author>@{feed.author.username}</S.Author>
+          </S.HeaderProfile>
           <S.Content>{feed.content}</S.Content>
         </S.Header>
         <S.Comments>
-          {isLoading
-            ? "로딩 중"
-            : comments.length === 0
-            ? "첫 번째 댓글을 달아보세요"
-            : comments.map((comment) => (
-                <S.Comment>
-                  {comment.author.username}: {comment.content}
-                </S.Comment>
-              ))}
+          {isLoading ? (
+            "로딩 중"
+          ) : comments.length === 0 ? (
+            <p style={{ color: "#bbb" }}>첫 번째 댓글을 달아보세요!</p>
+          ) : (
+            comments.map((comment) => (
+              <S.Comment>
+                {comment.author.username}: {comment.content}
+              </S.Comment>
+            ))
+          )}
         </S.Comments>
       </S.Body>
     </S.Cnt>

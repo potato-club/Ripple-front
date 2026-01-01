@@ -3,7 +3,10 @@ import styled from "styled-components";
 export const Cnt = styled.div`
   width: 100%;
 `;
-export const Content = styled.div``;
+export const Content = styled.div`
+  margin-top: 8px;
+  font-size: 22px;
+`;
 export const MediaContents = styled.div`
   display: flex;
   // overflow-x: scroll; 스크롤 안생기고 찌그러지게
@@ -38,9 +41,20 @@ export const Header = styled.div`
   /* display: flex; */
   padding: 8px 16px;
 `;
-export const Author = styled.div``;
+export const HeaderProfile = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+`;
+export const ProfileImage = styled.img`
+  border-radius: 999px;
+  height: 32px;
+`;
+export const Author = styled.div`
+  font-size: 18px;
+`;
 export const Comments = styled.div`
-  padding: 0 16px;
+  padding: 8px 16px;
   overflow: hidden;
 `;
 export const Comment = styled.div`

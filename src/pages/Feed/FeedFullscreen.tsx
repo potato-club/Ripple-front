@@ -7,6 +7,8 @@ import { useEffect, useState, useRef } from "react";
 import type { Comment } from "../../types/Comment";
 import { getComments } from "../../services/Comments/GetComments";
 import { PostComments } from "../../services/Comments/PostComments";
+import { useMyProfileStore } from "../../stores/useMyProfileStore";
+import { useNavigate } from "react-router";
 
 export const FeedFullscreen = ({
   feedFullView,
@@ -18,7 +20,7 @@ export const FeedFullscreen = ({
   onExit: () => void;
 }) => {
   /* 댓글 관련 상태 */
-  const [commentResponse, setCommentResponse] = useState<Comment[]>([])
+  const [commentResponse, setCommentResponse] = useState<Comment[]>([]);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [hasNext, setHasNext] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -27,6 +29,9 @@ export const FeedFullscreen = ({
   /* 댓글 작성 상태 */
   const [commentText, setCommentText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  /* 사용자 프로필 */
+  const myProfile = useMyProfileStore((state) => state.data);
 
   const loadComments = async (cursorId?: number) => {
     if (isLoading) return;
@@ -37,7 +42,7 @@ export const FeedFullscreen = ({
         setIsLoading(false);
         return;
       }
-      
+
       if (cursorId) {
         // 무한 스크롤: 기존 댓글에 새로운 댓글 추가
         setCommentResponse((prev) => [...prev, ...response.comments]);
@@ -45,7 +50,7 @@ export const FeedFullscreen = ({
         // 초기 로드: 댓글 설정
         setCommentResponse(response.comments);
       }
-      
+
       setNextCursor(response.nextCursor);
       setHasNext(response.hasNext);
     } finally {
@@ -95,12 +100,14 @@ export const FeedFullscreen = ({
     }
   };
 
+  const navigator = useNavigate();
+
   return (
     <S.Cnt>
       <S.Header>
-        <S.HeaderLeft>
+        <S.HeaderLeft onClick={() => navigator(`/${feedFullView.authorName}`)}>
           <S.UploaderProfile src={profileImageUrl ?? prf} alt="profile" />
-          <S.UploaderName>{feedFullView.authorName}</S.UploaderName>
+          <S.UploaderName>@{feedFullView.authorName}</S.UploaderName>
         </S.HeaderLeft>
         <S.ExitButton
           onClick={onExit}
@@ -128,7 +135,7 @@ export const FeedFullscreen = ({
       <S.CommentInputSection>
         <S.CommentInputWrapper>
           <S.CommentProfileImg
-            src={profileImageUrl ?? prf}
+            src={myProfile?.profileImageUrl ?? prf}
             alt="profile"
           />
           <S.CommentInputBox>
@@ -136,7 +143,7 @@ export const FeedFullscreen = ({
               type="text"
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
-              onKeyPress={(e) => {
+              onKeyDown={(e) => {
                 if (e.key === "Enter" && !isSubmitting) {
                   handleSubmitComment();
                 }
@@ -165,9 +172,13 @@ export const FeedFullscreen = ({
                 />
                 <S.CommentItemContent>
                   <S.CommentItemHeader>
-                    <S.CommentItemAuthor>{comment.author.username}</S.CommentItemAuthor>
+                    <S.CommentItemAuthor>
+                      {comment.author.username}
+                    </S.CommentItemAuthor>
                     <S.CommentItemDate>
-                      {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : "방금"}
+                      {comment.createdAt
+                        ? new Date(comment.createdAt).toLocaleDateString()
+                        : "방금"}
                     </S.CommentItemDate>
                   </S.CommentItemHeader>
                   <S.CommentItemText>{comment.content}</S.CommentItemText>
@@ -175,10 +186,18 @@ export const FeedFullscreen = ({
               </S.CommentItem>
             ))}
             <div ref={observerTarget} style={{ height: "1px" }} />
-            {isLoading && <div style={{ textAlign: "center", padding: "12px", color: "#999" }}>댓글 로딩 중...</div>}
+            {isLoading && (
+              <div
+                style={{ textAlign: "center", padding: "12px", color: "#999" }}
+              >
+                댓글 로딩 중...
+              </div>
+            )}
           </>
         ) : (
-          <div style={{ textAlign: "center", padding: "20px", color: "#999" }}>{feedFullView.commentCount}개의 댓글</div>
+          <div style={{ textAlign: "center", padding: "20px", color: "#999" }}>
+            {feedFullView.commentCount}개의 댓글
+          </div>
         )}
       </S.Comments>
 

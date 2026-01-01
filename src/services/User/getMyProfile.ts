@@ -24,12 +24,13 @@ function isMyProfile(raw: unknown): raw is MyProfileResponse {
 export const getMyProfile = async () => {
   try {
     const res = await axiosInstance.get<MyProfileResponse>(`/api/users/me`);
+    // console.log(res);
     if (res && isMyProfile(res.data)) return res.data;
   } catch (error) {
     if (isAxiosError(error)) {
       console.log(error.response?.data);
     } else {
-      console.log(error)
+      console.log(error);
     }
   }
   return false;

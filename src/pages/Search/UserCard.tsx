@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import profileImagePlaceholderSrc from "../../assets/icons/account.svg";
 import { useNavigate } from "react-router";
+import { useState } from "react";
 
 const StyledCnt = styled.div`
   display: flex;
@@ -46,17 +47,22 @@ interface UserCardProps {
   id: number;
   username: string;
   profileImageUrl: string | null;
+  isFollowing: boolean;
   onProfileClick: (userId: number) => void;
   onFollow: (userId: number) => void;
+  onUnfollow: (userId: number) => void;
 }
 
 export const UserCard = ({
   id,
   username,
   profileImageUrl,
+  isFollowing,
   onFollow,
+  onUnfollow,
 }: UserCardProps) => {
   const navigator = useNavigate();
+  const [following, setFollowing] = useState(isFollowing);
   return (
     <StyledCnt>
       <StyledHeader onClick={() => navigator(`/${username}`)}>
@@ -67,7 +73,22 @@ export const UserCard = ({
         <StyledUsername>{username}</StyledUsername>
       </StyledHeader>
       <StyledContent>
-        <StyledFollowBtn onClick={() => onFollow(id)}>팔로우</StyledFollowBtn>
+        <StyledFollowBtn
+          style={following ? { backgroundColor: "#5dda52ff" } : {}}
+          onClick={
+            following
+              ? () => {
+                  onUnfollow(id);
+                  setFollowing(false);
+                }
+              : () => {
+                  onFollow(id);
+                  setFollowing(true);
+                }
+          }
+        >
+          {following ? "팔로잉" : "팔로우"}
+        </StyledFollowBtn>
       </StyledContent>
     </StyledCnt>
   );

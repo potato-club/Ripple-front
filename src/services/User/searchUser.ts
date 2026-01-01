@@ -7,6 +7,7 @@ const ResponseSchema = z.object({
       id: z.number(),
       username: z.string(),
       profileImageUrl: z.string().nullable(),
+      following: z.boolean(),
     })
   ),
   nextCursor: z.number().nullable(),

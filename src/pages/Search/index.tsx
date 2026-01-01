@@ -7,9 +7,15 @@ import { UserCard } from "./UserCard";
 import searchIcon from "../../assets/icons/search.svg";
 import { searchUser } from "../../services/User/searchUser";
 import { FollowUser } from "../../services/User/Follow/FollowUser";
+import { UnFollowUser } from "../../services/User/Follow/UnFollowUser";
 
 interface SearchResult {
-  items: { id: number; username: string; profileImageUrl: string | null }[];
+  items: {
+    id: number;
+    username: string;
+    profileImageUrl: string | null;
+    following: boolean;
+  }[];
   nextCursor: number | null;
   hasNext: boolean;
 }
@@ -21,9 +27,14 @@ const Search = () => {
     try {
       const res = await searchUser(term, 20);
       setSearchResults(res);
+      console.log(res);
     } catch (err) {
       console.error(err);
-      setSearchResults({ hasNext: false, items: [], nextCursor: null });
+      setSearchResults({
+        hasNext: false,
+        items: [],
+        nextCursor: null,
+      });
     }
   }
 
@@ -33,6 +44,11 @@ const Search = () => {
       console.log(
         `[ ID: ${res.fromUserId} > ID: ${res.toUserId} ] => Following: ${res.following}`
       );
+  }
+
+  async function handleUnfollow(id: number) {
+    const res = await UnFollowUser(id);
+    if (res) console.log("언팔로우:", id);
   }
 
   // 탭 이름 변경
@@ -65,7 +81,9 @@ const Search = () => {
                   username={e.username}
                   profileImageUrl={e.profileImageUrl}
                   onFollow={handleFollow}
+                  onUnfollow={handleUnfollow}
                   onProfileClick={() => {}}
+                  isFollowing={e.following}
                 />
               ))
             ) : (
