@@ -13,6 +13,9 @@ const CommentSchema = z.object({
   replyToUserId: z.number().nullable(),
   replyToCommentId: z.number().nullable(),
   content: z.string().nullable(),
+  likeCount: z.number(),
+  deleted: z.boolean(),
+  createdAt: z.string()
 });
 
 const CommentsSchema = z.object({

@@ -10,7 +10,7 @@ import { getHomeFeeds } from "../../services/feeds/getHomeFeeds";
 import { FeedItem } from "./FeedItem";
 import { useIsLoggedIn } from "../../hooks/useIsLoggedIn";
 import { FeedFullscreen } from "./FeedFullscreen";
-import type { FeedFullView } from "../../types/FeedFullview";
+import type { FeedFullView } from "../../types/FeedFullView";
 import { GetFeedFullView } from "../../services/feeds/GetFeedFullView";
 
 const SCnt = styled.div`
