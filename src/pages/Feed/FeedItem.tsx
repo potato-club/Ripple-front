@@ -4,7 +4,13 @@ import type { Comment } from "../../types/Comment";
 import { getComments } from "../../services/Comments/GetComments";
 import * as S from "./FeedItems.styles";
 
-export const FeedItem = ({ feed }: { feed: Feed }) => {
+export const FeedItem = ({
+  feed,
+  onClick,
+}: {
+  feed: Feed;
+  onClick: (id: number) => void;
+}) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   // const [hasLoaded, setHasLoaded] = useState(false);
@@ -43,8 +49,12 @@ export const FeedItem = ({ feed }: { feed: Feed }) => {
     }
   };
   return (
-    <S.Cnt ref={observerRef}>
-      <S.MediaContents>{feed.thumbnailUrl && <S.MediaContentImage src={feed.thumbnailUrl} alt="thumbnail" />}</S.MediaContents>
+    <S.Cnt ref={observerRef} onClick={() => onClick(feed.id)}>
+      <S.MediaContents>
+        {feed.thumbnailUrl && (
+          <S.MediaContentImage src={feed.thumbnailUrl} alt="thumbnail" />
+        )}
+      </S.MediaContents>
       <S.Body>
         <S.Header>
           <S.Author>@{feed.author.username}</S.Author>

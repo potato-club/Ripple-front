@@ -34,6 +34,7 @@ export const PostComments = async (feedId : number, parentId: number | null, con
       });
       return res.data;
     } else {
+      console.log("루트 댓글 작성");
       res = await axiosInstance.post<PostCommentsResponse>(`/api/feeds/${feedId}/comments`, {
         content: content
       });
