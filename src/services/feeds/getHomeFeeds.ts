@@ -37,7 +37,7 @@ function isValidResponse(obj: any): obj is FeedResponse {
   return false;
 }
 
-export const getHoomFeeds = async (
+export const getHomeFeeds = async (
   cursor: number | null = null,
   limit: number = 10
 ): Promise<{

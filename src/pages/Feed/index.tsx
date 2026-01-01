@@ -6,9 +6,12 @@ import rippleIcon from "../../assets/ripple-icon.png";
 import directMessageIcon from "../../assets/icons/dm.svg";
 import { useNavigate } from "react-router";
 import { getUniqueBy } from "../../utils/getUniqueBy";
-import { getHoomFeeds } from "../../services/feeds/getHoomFeeds";
+import { getHomeFeeds } from "../../services/feeds/getHomeFeeds";
 import { FeedItem } from "./FeedItem";
 import { useIsLoggedIn } from "../../hooks/useIsLoggedIn";
+import { FeedFullscreen } from "./FeedFullscreen";
+import type { FeedFullView } from "../../types/FeedFullview";
+import { GetFeedFullView } from "../../services/feeds/GetFeedFullView";
 
 const SCnt = styled.div`
   background-color: #222;
@@ -68,7 +71,7 @@ const FeedPage = () => {
     setIsLoading(true);
 
     try {
-      const res = await getHoomFeeds(cursorRef.current, 3);
+      const res = await getHomeFeeds(cursorRef.current, 3);
 
       if (res.error) {
         navigate("/login");
@@ -120,16 +123,33 @@ const FeedPage = () => {
     return () => observer.disconnect();
   }, []);
 
+  const [showingFeedFullscreen, setShowingFeedFullscreen] =
+    useState<null | FeedFullView>(null);
+
+  function showFullscreen(id: number) {
+    GetFeedFullView(id).then((e) => setShowingFeedFullscreen(e));
+  }
+
   return (
     <SCnt>
       <SBody>
+        {showingFeedFullscreen && (
+          <FeedFullscreen
+            feedFullView={showingFeedFullscreen}
+            profileImageUrl={
+              feeds.find((e) => e.author.id === showingFeedFullscreen.authorId)
+                ?.author.profileImageUrl ?? null
+            }
+            onExit={() => setShowingFeedFullscreen(null)}
+          />
+        )}
         <SHeader>
           <SRippleIcon />
           <SDirectMessage />
         </SHeader>
         <SFeedsWrp>
           {feeds.map((feed) => (
-            <FeedItem key={feed.id} feed={feed} />
+            <FeedItem key={feed.id} feed={feed} onClick={showFullscreen} />
           ))}
           <div
             ref={loaderRef}
