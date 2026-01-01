@@ -221,17 +221,32 @@ const StyledNoneTag = styled.div`
   color: #888;
 `;
 
+const SUpdateProfileImageModalInputSubmitButtonWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 16px;
+`;
+
+const SUpdateProfileImageModalInputSubmitButton = styled.button`
+  background-color: var(--color-primary);
+  border-radius: 8px;
+  padding: 8px;
+  color: #fff;
+  font-weight: 500;
+  width: 90%;
+`;
+
 const Upload = () => {
   const [previews, setPreviews] = useState<string[]>([]); // 미리보기 이미지 URL 배열
-  const [isMultiple, setIsMultiple] = useState(false); // 다중 선택 여부
-  const [isSingleCss, setIsSingleCss] = useState(true); // 다중에서 단일 선택일 경우 CSS 조정
+  const [isMultiple, setIsMultiple] = useState(true); // 다중 선택 여부
   const fileInputRef = useRef<HTMLInputElement>(null); // 파일 입력 참조
-  const filesRef = useRef<FileList | null>(null); // 선택된 파일들 참조
 
   const [tagList, setTagList] = useState<string[]>([]); // 태그 리스트
   const [tagInput, setTagInput] = useState(""); // 태그 입력 값
   const tagListRef = useRef<HTMLDivElement>(null); // 태그 리스트 참조
   const moreTagRef = useRef<HTMLDivElement>(null); // 숨겨진 더보기 태그 참조
+
   // 태그 리스트 오버플로우 훅
   const {visibleCount, hiddenCount} = useOverflowTagList<string>(
     tagListRef,
@@ -244,16 +259,10 @@ const Upload = () => {
 
   const navigate = useNavigate();
 
-  /** 다중 선택 여부 또는 미리보기 이미지 변경 시 CSS 조정 */
-  useEffect(() => {
-    setIsSingleCss(!isMultiple || (isMultiple && previews.length <= 1));
-  }, [isMultiple, previews]);
-
   /** 파일 선택 핸들러 */
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    filesRef.current = files;
     handlePreviewChange(files);
   };
 
@@ -311,7 +320,7 @@ const Upload = () => {
   };
 
   const uploadFeed = async () => {
-    const Files = filesRef.current;
+    const Files = fileInputRef.current?.files;
 
     if (!Files || Files.length === 0) { // 파일이 없으면 종료
       console.error("No files selected for upload.");
@@ -402,27 +411,19 @@ const Upload = () => {
         </StyledToggle>
       </StyledHeader>
       <StyledBody>
-        <StyledUploadImgPreviewWrp style={{ justifyContent: isSingleCss ? "center" : "flex-start"}}>
+        <StyledUploadImgPreviewWrp onClick={() => fileInputRef.current?.click()} style={{ justifyContent: (previews.length > 1) ?  "flex-start" :  "center"}}>
           {(previews.length > 0) ? previews.map((src, index) => (
             <StyledUploadImgPreview
               key={index}
               src={src}
               alt={`preview-${index}`}
             />
-          )) : 
+          )) :
             <StyledNotSelectedFeedWrp>
-              <input
-              type="file"
-              multiple={isMultiple}
-              id="file-input"
-              onChange={handleFile}
-              hidden
-              />
-              <label htmlFor="file-input">
-                <StyledNotSelectedFeed>여기를 클릭하여 올릴 게시물을 선택해주세요</StyledNotSelectedFeed>
-              </label>
+              <StyledNotSelectedFeed>여기를 클릭하여 올릴 게시물을 선택해주세요</StyledNotSelectedFeed>
             </StyledNotSelectedFeedWrp>
           }
+          <input ref={fileInputRef} type="file" multiple={isMultiple} onChange={handleFile} hidden />
         </StyledUploadImgPreviewWrp>
 
         <StyledInputWrp>
@@ -512,10 +513,15 @@ const Upload = () => {
           </StyledVisibilitySelectBtnList>
         </StyledVisibilitySelectBtnListWrp>
 
+        <SUpdateProfileImageModalInputSubmitButtonWrapper>
+          <SUpdateProfileImageModalInputSubmitButton onClick={()=>{uploadFeed()}}>업로드</SUpdateProfileImageModalInputSubmitButton>
+        </SUpdateProfileImageModalInputSubmitButtonWrapper>
+
       </StyledBody>
-      <StyledUploadBtn>
+
+      {/* <StyledUploadBtn>
         <StyledUploadIcon src={uploadIcon} onClick={()=>{uploadFeed()}}/>
-      </StyledUploadBtn>
+      </StyledUploadBtn> */}
       <Navbar />
     </Cnt>
   )
