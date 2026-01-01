@@ -1,16 +1,24 @@
-import {axiosInstance} from "../../axiosClient";
+import z from "zod";
+import { axiosInstance } from "../../axiosClient";
 
-export interface followUserResponse {
-  fromUserId: number,
-  toUserId: number,
-  following: boolean
+const FollowUserResponseSchema = z.object({
+  fromUserId: z.number(),
+  toUserId: z.number(),
+  following: z.boolean(),
+});
+
+type FollowUserResponse = z.infer<typeof FollowUserResponseSchema>;
+
+function isFollowUserResponse(a: unknown): a is FollowUserResponse {
+  return FollowUserResponseSchema.safeParse(a).success;
 }
 
-export const FollowUser = async (targetId: string) => {
+export const FollowUser = async (targetId: number) => {
   try {
-    const res = await axiosInstance.get<followUserResponse>(`/api/users/${targetId}/follow`);
-    if (!res.data)
-      return res.data;
+    const res = await axiosInstance.put<FollowUserResponse>(
+      `/api/users/me/followings/${targetId}`
+    );
+    if (isFollowUserResponse(res.data)) return res.data;
     else {
       throw new Error("반환 객체가 존재하지 않음.");
     }

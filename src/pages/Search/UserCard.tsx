@@ -1,57 +1,71 @@
 import styled from "styled-components";
+import profileImagePlaceholderSrc from "../../assets/icons/account.svg";
 
 const StyledCnt = styled.div`
   display: flex;
   align-items: center;
   overflow: hidden;
   justify-content: space-between;
+  color: white;
+  margin-bottom: 16px;
+  &:last-child {
+    margin-bottom: 0px;
+  }
 `;
 const StyledHeader = styled.div`
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 16px;
   height: 64px;
 `;
 const StyledProfileImage = styled.img`
-  height: 80%;
+  /* height: 80%; */
+  height: 64px;
+  width: 64px;
   border-radius: 50%;
 `;
-const StyledUsername = styled.div``;
+const StyledUsername = styled.div`
+  font-size: 16px;
+`;
 const StyledContent = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
 `;
 const StyledFollowBtn = styled.div`
-  background-color: #ccc;
+  background-color: #1fa6f4;
   border-radius: 12px;
-  padding: 7px 20px;
+  padding: 4px 20px;
+  width: 88px;
+  text-align: center;
+  font-weight: 500;
 `;
 
 interface UserCardProps {
-  userId: number;
+  id: number;
   username: string;
-  profileImage: string;
+  profileImageUrl: string | null;
   onProfileClick: (userId: number) => void;
   onFollow: (userId: number) => void;
 }
 
 export const UserCard = ({
-  userId,
+  id,
   username,
-  profileImage,
+  profileImageUrl,
   onFollow,
 }: UserCardProps) => {
   return (
     <StyledCnt>
       <StyledHeader>
-        <StyledProfileImage src={profileImage} alt="" />
+        <StyledProfileImage
+          src={profileImageUrl ?? profileImagePlaceholderSrc}
+          alt=""
+        />
         <StyledUsername>{username}</StyledUsername>
       </StyledHeader>
       <StyledContent>
-        <StyledFollowBtn onClick={() => onFollow(userId)}>
-          팔로우
-        </StyledFollowBtn>
+        <StyledFollowBtn onClick={() => onFollow(id)}>팔로우</StyledFollowBtn>
       </StyledContent>
     </StyledCnt>
   );
